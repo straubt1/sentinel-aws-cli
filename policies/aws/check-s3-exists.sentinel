@@ -1,0 +1,77 @@
+# import "tfplan-functions" as plan
+import "signature-signing" as signing
+# import "hcp-test-config" as hcp_test_config
+import "http"
+import "strings"
+import "json"
+import "time"
+
+# Parameters for HCP credentials
+param hcp_client_id default ""
+param hcp_client_secret default ""
+param hcp_organization_id default ""
+param hcp_project_id default ""
+
+
+# print(signing.pow(2,4))
+
+a= signing.sha256("test")
+print("SHA256 of 'test':", a )
+
+# Hardcoded test for AWS SigV4 signing
+test_method = "GET"
+test_service = "s3"
+test_region = "us-east-1"
+test_host = "mybucket.s3.amazonaws.com"
+test_path = "/"
+test_access_key = "AKIAIOSFODNN7EXAMPLE"
+test_secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+test_headers = {
+  "host": test_host,
+  "x-amz-date": "20220101T120000Z",
+}
+test_query_params = {}
+
+signed_request = signing.aws_sign_v4(
+  test_method,
+  "https://" + test_host + test_path,
+  test_headers,
+  "",
+  test_access_key,
+  test_secret_key,
+  test_region,
+  test_service,
+)
+
+
+print("AWS SigV4 signed request:", signed_request)
+
+# if hcp_client_id is "" or hcp_client_secret is "" or hcp_organization_id is "" or hcp_project_id is "" {
+# 	print("HCP credentials are not set. Using the static import for testing purposes.")
+# 	hcp_client_id = hcp_test_config.hcp_client_id
+# 	hcp_client_secret = hcp_test_config.hcp_client_secret
+# 	hcp_organization_id = hcp_test_config.hcp_organization_id
+# 	hcp_project_id = hcp_test_config.hcp_project_id
+# }
+
+start = time.now
+
+# Configure HCP functions
+# hcp.setHCPConfiguration(hcp_client_id, hcp_client_secret, hcp_organization_id, hcp_project_id)
+
+# Get all resources of type aws_instance from the Terraform plan
+# allEC2Instances = plan.find_resources("aws_instance")
+
+instance_violations = {}
+# if length(allEC2Instances) > 0 {
+# 	instance_violations = validateImageIds(allEC2Instances)
+# }
+
+stop = time.now
+duration = time.load(stop).sub(start)
+print("Policy execution time:", duration / 1000000, "ms")
+
+# Main rule
+main = rule {
+	length(instance_violations) is 0
+}

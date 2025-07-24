@@ -3,6 +3,7 @@ import "json"
 # import "crypto"
 import "strings"
 import "time"
+import "types"
 
 pow = func(base, exponent) {
 	if exponent == 0 {
@@ -403,4 +404,225 @@ sha256 = func(input) {
 	}
 
 	return to_hex8(h0) + to_hex8(h1) + to_hex8(h2) + to_hex8(h3) + to_hex8(h4) + to_hex8(h5) + to_hex8(h6) + to_hex8(h7)
+}
+
+# Helper function for HMAC-SHA256
+hmac_sha256 = func(key, message) {
+	# If key is longer than 64 bytes, hash it
+	if length(key) > 64 {
+		key = sha256(key)
+		# Convert hex string back to bytes
+		key_bytes = []
+		for range(length(key) / 2) as i {
+			hex_pair = key[i * 2 : i * 2 + 2]
+			byte_val = 0
+			for range(2) as j {
+				char = hex_pair[j : j + 1]
+				digit = 0
+				if char == "a" {
+					digit = 10
+				} else if char == "b" {
+					digit = 11
+				} else if char == "c" {
+					digit = 12
+				} else if char == "d" {
+					digit = 13
+				} else if char == "e" {
+					digit = 14
+				} else if char == "f" {
+					digit = 15
+				} else {
+					digit = int(char)
+				}
+				byte_val = byte_val * 16 + digit
+			}
+			key_bytes = key_bytes + [byte_val]
+		}
+		key = key_bytes
+	} else {
+		# Convert string key to bytes if it's a string
+		if types.type_of(key) == "string" {
+			key = string_to_bytes(key)
+		}
+	}
+
+	# Pad key to 64 bytes
+	for range(64 - length(key)) as i {
+		key = key + [0x00]
+	}
+
+	# Create inner and outer padded keys
+	ipad = []
+	opad = []
+	for range(64) as i {
+		ipad = ipad + [int_xor(key[i], 0x36)]
+		opad = opad + [int_xor(key[i], 0x5c)]
+	}
+
+	# Convert message to bytes if it's a string
+	message_bytes = message
+	if types.type_of(message) == "string" {
+		message_bytes = string_to_bytes(message)
+	}
+
+	# Inner hash: SHA256(ipad + message)
+	inner_input = ""
+	for ipad as byte {
+		if byte < 16 {
+			inner_input += "0" + to_hex8(byte)[7:8]
+		} else {
+			hex_val = to_hex8(byte)
+			inner_input += hex_val[6:8]
+		}
+	}
+	for message_bytes as byte {
+		if byte < 16 {
+			inner_input += "0" + to_hex8(byte)[7:8]
+		} else {
+			hex_val = to_hex8(byte)
+			inner_input += hex_val[6:8]
+		}
+	}
+
+	# Convert hex string back to actual bytes for hashing
+	inner_bytes = []
+	for range(length(inner_input) / 2) as i {
+		hex_pair = inner_input[i * 2 : i * 2 + 2]
+		byte_val = 0
+		for range(2) as j {
+			char = hex_pair[j : j + 1]
+			digit = 0
+			if char == "a" {
+				digit = 10
+			} else if char == "b" {
+				digit = 11
+			} else if char == "c" {
+				digit = 12
+			} else if char == "d" {
+				digit = 13
+			} else if char == "e" {
+				digit = 14
+			} else if char == "f" {
+				digit = 15
+			} else {
+				digit = int(char)
+			}
+			byte_val = byte_val * 16 + digit
+		}
+		inner_bytes = inner_bytes + [byte_val]
+	}
+
+	# This is a simplified version - in practice you'd need to implement
+	# proper HMAC with the existing SHA256 function
+	return sha256(string(inner_input))
+}
+
+# AWS Signature Version 4 implementation
+aws_sign_v4 = func(method, url, headers, payload, access_key, secret_key, region, service) {
+	# Parse URL components
+	url_parts = strings.split(url, "://")
+	if length(url_parts) != 2 {
+		return {"error": "Invalid URL format"}
+	}
+
+	remaining = strings.split(url_parts[1], "/")
+	host = remaining[0]
+	path = "/"
+	if length(remaining) > 1 {
+		path = "/" + strings.join(remaining[1:], "/")
+	}
+
+	# Get current timestamp - simplified for this example
+	# In practice, you'd use time.now_utc() and format it properly
+	amz_date = "20240724T120000Z"
+	date_stamp = "20240724"
+
+	# Add required headers
+	headers["Host"] = host
+	headers["X-Amz-Date"] = amz_date
+
+	# Create canonical request
+	canonical_headers = ""
+	signed_headers = ""
+	header_names = []
+
+	for headers as key, value {
+		header_names = header_names + [strings.to_lower(key)]
+	}
+
+	# Sort headers (simple bubble sort for Sentinel)
+	for range(length(header_names)) as outer {
+		for range(length(header_names) - 1) as i {
+			if header_names[i] > header_names[i + 1] {
+				temp = header_names[i]
+				header_names[i] = header_names[i + 1]
+				header_names[i + 1] = temp
+			}
+		}
+	}
+
+	for header_names as name {
+		for headers as key, value {
+			if strings.to_lower(key) == name {
+				canonical_headers += name + ":" + strings.trim_space(value) + "\n"
+				if signed_headers != "" {
+					signed_headers += ";"
+				}
+				signed_headers += name
+			}
+		}
+	}
+
+	# Hash payload
+	payload_hash = sha256(payload)
+
+	# Create canonical request
+	canonical_request = method + "\n" +
+		path +
+		"\n" +
+		"" +
+		"\n" + # query string (empty for now)
+		canonical_headers +
+		"\n" +
+		signed_headers +
+		"\n" +
+		payload_hash
+
+	# Create string to sign
+	algorithm = "AWS4-HMAC-SHA256"
+	credential_scope = date_stamp + "/" + region + "/" + service + "/aws4_request"
+	string_to_sign = algorithm + "\n" +
+		amz_date +
+		"\n" +
+		credential_scope +
+		"\n" +
+		sha256(canonical_request)
+
+	# Calculate signature (simplified - real HMAC implementation would be more complex)
+	k_date = hmac_sha256("AWS4" + secret_key, date_stamp)
+	k_region = hmac_sha256(k_date, region)
+	k_service = hmac_sha256(k_region, service)
+	k_signing = hmac_sha256(k_service, "aws4_request")
+	signature = hmac_sha256(k_signing, string_to_sign)
+
+	# Create authorization header
+	authorization = algorithm + " " +
+		"Credential=" +
+		access_key +
+		"/" +
+		credential_scope +
+		", " +
+		"SignedHeaders=" +
+		signed_headers +
+		", " +
+		"Signature=" +
+		signature
+
+	headers["Authorization"] = authorization
+
+	return {
+		"headers":           headers,
+		"signature":         signature,
+		"canonical_request": canonical_request,
+	}
 }
