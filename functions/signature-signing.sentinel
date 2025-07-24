@@ -274,6 +274,18 @@ string_to_bytes = func(input) {
 	return bytes
 }
 
+# Produce final hash value as hex string
+# Helper function to convert number to 8-character hex string
+to_hex8 = func(num) {
+	hex_chars = "0123456789abcdef"
+	result = ""
+	for range(8) as i {
+		digit = int(num / pow(16, 7 - i)) % 16
+		result += hex_chars[digit : digit + 1]
+	}
+	return result
+}
+
 # SHA-256 implementation for Sentinel
 sha256 = func(input) {
 	# Convert string to bytes
@@ -390,7 +402,5 @@ sha256 = func(input) {
 		h7 = (h7 + h) % pow(2, 32)
 	}
 
-	# Produce final hash value as hex string
-	# return print(h0, h1, h2, h3, h4, h5, h6, h7)
-	return sprintf("%08x%08x%08x%08x%08x%08x%08x%08x", h0, h1, h2, h3, h4, h5, h6, h7)
+	return to_hex8(h0) + to_hex8(h1) + to_hex8(h2) + to_hex8(h3) + to_hex8(h4) + to_hex8(h5) + to_hex8(h6) + to_hex8(h7)
 }
