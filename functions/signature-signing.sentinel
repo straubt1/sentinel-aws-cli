@@ -39,19 +39,19 @@ bitwise_not = func(a) {
 
 # Helper function for XOR operation (a ^ b)
 int_xor = func(a, b) {
-  result = 0
-  power = 1
+	result = 0
+	power = 1
 
-  for range(32) as i {
-    a_bit = int(a / power) % 2
-    b_bit = int(b / power) % 2
-    if a_bit != b_bit {
-      result += power
-    }
-    power *= 2
-  }
+	for range(32) as i {
+		a_bit = int(a / power) % 2
+		b_bit = int(b / power) % 2
+		if a_bit != b_bit {
+			result += power
+		}
+		power *= 2
+	}
 
-  return result
+	return result
 }
 
 # Helper function for right rotation
@@ -345,8 +345,8 @@ sha256 = func(input) {
 
 		# Extend the sixteen 32-bit words into sixty-four 32-bit words
 		for range(16, 64) as i {
-			s0 = (rotr(w[i - 15], 7) xor rotr(w[i - 15], 18)) xor int(w[i - 15] / pow(2, 3))
-			s1 = (rotr(w[i - 2], 17) xor rotr(w[i - 2], 19)) xor int(w[i - 2] / pow(2, 10))
+			s0 = int_xor(int_xor(rotr(w[i - 15], 7), rotr(w[i - 15], 18)), int(w[i - 15] / pow(2, 3)))
+			s1 = int_xor(int_xor(rotr(w[i - 2], 17), rotr(w[i - 2], 19)), int(w[i - 2] / pow(2, 10)))
 			w = w + [(w[i - 16] + s0 + w[i - 7] + s1) % pow(2, 32)]
 		}
 
@@ -362,11 +362,11 @@ sha256 = func(input) {
 
 		# Main loop
 		for range(64) as i {
-			s1 = (rotr(e, 6) xor rotr(e, 11)) xor rotr(e, 25)
-			ch = bitwise_and(e, f) xor bitwise_and(bitwise_not(e), g)
+			s1 = int_xor(int_xor(rotr(e, 6), rotr(e, 11)), rotr(e, 25))
+			ch = int_xor(bitwise_and(e, f), bitwise_and(bitwise_not(e), g))
 			temp1 = (h + s1 + ch + k[i] + w[i]) % pow(2, 32)
-			s0 = (rotr(a, 2) xor rotr(a, 13)) xor rotr(a, 22)
-			maj = (bitwise_and(a, b) xor bitwise_and(a, c)) xor bitwise_and(b, c)
+			s0 = int_xor(int_xor(rotr(a, 2), rotr(a, 13)), rotr(a, 22))
+			maj = int_xor(int_xor(bitwise_and(a, b), bitwise_and(a, c)), bitwise_and(b, c))
 			temp2 = (s0 + maj) % pow(2, 32)
 
 			h = g
@@ -391,5 +391,6 @@ sha256 = func(input) {
 	}
 
 	# Produce final hash value as hex string
+	# return print(h0, h1, h2, h3, h4, h5, h6, h7)
 	return sprintf("%08x%08x%08x%08x%08x%08x%08x%08x", h0, h1, h2, h3, h4, h5, h6, h7)
 }
