@@ -1,0 +1,547 @@
+# SHA-256 and HMAC-SHA256 Implementation for HashiCorp Sentinel
+# This file contains a complete, standalone implementation of SHA-256 and HMAC-SHA256
+# cryptographic functions for use in HashiCorp Sentinel policies.
+
+# Bitwise helper functions for SHA-256 operations
+
+# XOR operation for 32-bit integers
+int_xor = func(a, b) {
+    # XOR truth table implementation for 32-bit integers
+    result = 0
+    bit = 1
+    for range(32) as i {
+        if ((a / bit) % 2) != ((b / bit) % 2) {
+            result = result + bit
+        }
+        bit = bit * 2
+    }
+    return result
+}
+
+# Bitwise AND operation for 32-bit integers
+bitwise_and = func(a, b) {
+    result = 0
+    bit = 1
+    for range(32) as i {
+        if ((a / bit) % 2) == 1 and ((b / bit) % 2) == 1 {
+            result = result + bit
+        }
+        bit = bit * 2
+    }
+    return result
+}
+
+# Bitwise NOT operation for 32-bit integers (with 32-bit mask)
+bitwise_not = func(a) {
+    return int_xor(a, 0xFFFFFFFF)
+}
+
+# Right rotate operation for 32-bit integers
+rotr = func(x, n) {
+    mask = 0xFFFFFFFF
+    x = bitwise_and(x, mask)
+    return bitwise_and((x >> n) | (x << (32 - n)), mask)
+}
+
+# Right shift operation for 32-bit integers
+shr = func(x, n) {
+    return bitwise_and(x >> n, 0xFFFFFFFF)
+}
+
+# SHA-256 Constants (first 32 bits of the fractional parts of the cube roots of the first 64 primes)
+sha256_k = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+]
+
+# SHA-256 initial hash values (first 32 bits of the fractional parts of the square roots of the first 8 primes)
+sha256_h0 = [
+    0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+    0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
+]
+
+# Convert a string to an array of bytes
+string_to_bytes = func(s) {
+    bytes = []
+    for i in range(length(s)) {
+        char_code = 0
+        char = s[i:i+1]
+        
+        # Convert character to ASCII value using if/else chain
+        if char == "a" {
+            char_code = 97
+        } else if char == "b" {
+            char_code = 98
+        } else if char == "c" {
+            char_code = 99
+        } else if char == "d" {
+            char_code = 100
+        } else if char == "e" {
+            char_code = 101
+        } else if char == "f" {
+            char_code = 102
+        } else if char == "g" {
+            char_code = 103
+        } else if char == "h" {
+            char_code = 104
+        } else if char == "i" {
+            char_code = 105
+        } else if char == "j" {
+            char_code = 106
+        } else if char == "k" {
+            char_code = 107
+        } else if char == "l" {
+            char_code = 108
+        } else if char == "m" {
+            char_code = 109
+        } else if char == "n" {
+            char_code = 110
+        } else if char == "o" {
+            char_code = 111
+        } else if char == "p" {
+            char_code = 112
+        } else if char == "q" {
+            char_code = 113
+        } else if char == "r" {
+            char_code = 114
+        } else if char == "s" {
+            char_code = 115
+        } else if char == "t" {
+            char_code = 116
+        } else if char == "u" {
+            char_code = 117
+        } else if char == "v" {
+            char_code = 118
+        } else if char == "w" {
+            char_code = 119
+        } else if char == "x" {
+            char_code = 120
+        } else if char == "y" {
+            char_code = 121
+        } else if char == "z" {
+            char_code = 122
+        } else if char == "A" {
+            char_code = 65
+        } else if char == "B" {
+            char_code = 66
+        } else if char == "C" {
+            char_code = 67
+        } else if char == "D" {
+            char_code = 68
+        } else if char == "E" {
+            char_code = 69
+        } else if char == "F" {
+            char_code = 70
+        } else if char == "G" {
+            char_code = 71
+        } else if char == "H" {
+            char_code = 72
+        } else if char == "I" {
+            char_code = 73
+        } else if char == "J" {
+            char_code = 74
+        } else if char == "K" {
+            char_code = 75
+        } else if char == "L" {
+            char_code = 76
+        } else if char == "M" {
+            char_code = 77
+        } else if char == "N" {
+            char_code = 78
+        } else if char == "O" {
+            char_code = 79
+        } else if char == "P" {
+            char_code = 80
+        } else if char == "Q" {
+            char_code = 81
+        } else if char == "R" {
+            char_code = 82
+        } else if char == "S" {
+            char_code = 83
+        } else if char == "T" {
+            char_code = 84
+        } else if char == "U" {
+            char_code = 85
+        } else if char == "V" {
+            char_code = 86
+        } else if char == "W" {
+            char_code = 87
+        } else if char == "X" {
+            char_code = 88
+        } else if char == "Y" {
+            char_code = 89
+        } else if char == "Z" {
+            char_code = 90
+        } else if char == "0" {
+            char_code = 48
+        } else if char == "1" {
+            char_code = 49
+        } else if char == "2" {
+            char_code = 50
+        } else if char == "3" {
+            char_code = 51
+        } else if char == "4" {
+            char_code = 52
+        } else if char == "5" {
+            char_code = 53
+        } else if char == "6" {
+            char_code = 54
+        } else if char == "7" {
+            char_code = 55
+        } else if char == "8" {
+            char_code = 56
+        } else if char == "9" {
+            char_code = 57
+        } else if char == " " {
+            char_code = 32
+        } else if char == "!" {
+            char_code = 33
+        } else if char == "\"" {
+            char_code = 34
+        } else if char == "#" {
+            char_code = 35
+        } else if char == "$" {
+            char_code = 36
+        } else if char == "%" {
+            char_code = 37
+        } else if char == "&" {
+            char_code = 38
+        } else if char == "'" {
+            char_code = 39
+        } else if char == "(" {
+            char_code = 40
+        } else if char == ")" {
+            char_code = 41
+        } else if char == "*" {
+            char_code = 42
+        } else if char == "+" {
+            char_code = 43
+        } else if char == "," {
+            char_code = 44
+        } else if char == "-" {
+            char_code = 45
+        } else if char == "." {
+            char_code = 46
+        } else if char == "/" {
+            char_code = 47
+        } else if char == ":" {
+            char_code = 58
+        } else if char == ";" {
+            char_code = 59
+        } else if char == "<" {
+            char_code = 60
+        } else if char == "=" {
+            char_code = 61
+        } else if char == ">" {
+            char_code = 62
+        } else if char == "?" {
+            char_code = 63
+        } else if char == "@" {
+            char_code = 64
+        } else if char == "[" {
+            char_code = 91
+        } else if char == "\\" {
+            char_code = 92
+        } else if char == "]" {
+            char_code = 93
+        } else if char == "^" {
+            char_code = 94
+        } else if char == "_" {
+            char_code = 95
+        } else if char == "`" {
+            char_code = 96
+        } else if char == "{" {
+            char_code = 123
+        } else if char == "|" {
+            char_code = 124
+        } else if char == "}" {
+            char_code = 125
+        } else if char == "~" {
+            char_code = 126
+        } else if char == "\n" {
+            char_code = 10
+        } else if char == "\r" {
+            char_code = 13
+        } else if char == "\t" {
+            char_code = 9
+        } else {
+            # Default for unknown characters
+            char_code = 0
+        }
+        
+        append(bytes, char_code)
+    }
+    return bytes
+}
+
+# Convert bytes array to hex string
+bytes_to_hex = func(bytes) {
+    hex_chars = "0123456789abcdef"
+    result = ""
+    for byte in bytes {
+        high = (byte >> 4) & 0x0F
+        low = byte & 0x0F
+        result = result + hex_chars[high:high+1] + hex_chars[low:low+1]
+    }
+    return result
+}
+
+# Convert hex string to bytes array
+hex_to_bytes = func(hex_str) {
+    bytes = []
+    i = 0
+    while i < length(hex_str) {
+        if i + 1 < length(hex_str) {
+            high_char = hex_str[i:i+1]
+            low_char = hex_str[i+1:i+2]
+            
+            # Convert hex characters to values using if/else chain
+            high_val = 0
+            if high_char == "0" {
+                high_val = 0
+            } else if high_char == "1" {
+                high_val = 1
+            } else if high_char == "2" {
+                high_val = 2
+            } else if high_char == "3" {
+                high_val = 3
+            } else if high_char == "4" {
+                high_val = 4
+            } else if high_char == "5" {
+                high_val = 5
+            } else if high_char == "6" {
+                high_val = 6
+            } else if high_char == "7" {
+                high_val = 7
+            } else if high_char == "8" {
+                high_val = 8
+            } else if high_char == "9" {
+                high_val = 9
+            } else if high_char == "a" or high_char == "A" {
+                high_val = 10
+            } else if high_char == "b" or high_char == "B" {
+                high_val = 11
+            } else if high_char == "c" or high_char == "C" {
+                high_val = 12
+            } else if high_char == "d" or high_char == "D" {
+                high_val = 13
+            } else if high_char == "e" or high_char == "E" {
+                high_val = 14
+            } else if high_char == "f" or high_char == "F" {
+                high_val = 15
+            }
+            
+            low_val = 0
+            if low_char == "0" {
+                low_val = 0
+            } else if low_char == "1" {
+                low_val = 1
+            } else if low_char == "2" {
+                low_val = 2
+            } else if low_char == "3" {
+                low_val = 3
+            } else if low_char == "4" {
+                low_val = 4
+            } else if low_char == "5" {
+                low_val = 5
+            } else if low_char == "6" {
+                low_val = 6
+            } else if low_char == "7" {
+                low_val = 7
+            } else if low_char == "8" {
+                low_val = 8
+            } else if low_char == "9" {
+                low_val = 9
+            } else if low_char == "a" or low_char == "A" {
+                low_val = 10
+            } else if low_char == "b" or low_char == "B" {
+                low_val = 11
+            } else if low_char == "c" or low_char == "C" {
+                low_val = 12
+            } else if low_char == "d" or low_char == "D" {
+                low_val = 13
+            } else if low_char == "e" or low_char == "E" {
+                low_val = 14
+            } else if low_char == "f" or low_char == "F" {
+                low_val = 15
+            }
+            
+            byte_val = (high_val << 4) + low_val
+            append(bytes, byte_val)
+        }
+        i = i + 2
+    }
+    return bytes
+}
+
+# SHA-256 implementation
+sha256 = func(message) {
+    # Convert message to bytes
+    msg_bytes = []
+    if type(message) == "string" {
+        msg_bytes = string_to_bytes(message)
+    } else {
+        msg_bytes = message
+    }
+    
+    # Pre-processing: adding padding bits
+    msg_len = length(msg_bytes)
+    msg_bit_len = msg_len * 8
+    
+    # Append the '1' bit (0x80)
+    append(msg_bytes, 0x80)
+    
+    # Append 0 <= k < 512 bits '0', such that the resulting message length in bits
+    # is congruent to 448 (mod 512)
+    while (length(msg_bytes) % 64) != 56 {
+        append(msg_bytes, 0x00)
+    }
+    
+    # Append length of message (before pre-processing), in bits, as 64-bit big-endian integer
+    for i in range(8) {
+        append(msg_bytes, (msg_bit_len >> (8 * (7 - i))) & 0xFF)
+    }
+    
+    # Initialize hash values
+    h = [sha256_h0[0], sha256_h0[1], sha256_h0[2], sha256_h0[3], 
+         sha256_h0[4], sha256_h0[5], sha256_h0[6], sha256_h0[7]]
+    
+    # Process the message in successive 512-bit chunks
+    for chunk_start in range(0, length(msg_bytes), 64) {
+        # Break chunk into sixteen 32-bit big-endian words
+        w = []
+        for i in range(16) {
+            word = (msg_bytes[chunk_start + i*4] << 24) +
+                   (msg_bytes[chunk_start + i*4 + 1] << 16) +
+                   (msg_bytes[chunk_start + i*4 + 2] << 8) +
+                   msg_bytes[chunk_start + i*4 + 3]
+            append(w, word)
+        }
+        
+        # Extend the sixteen 32-bit words into sixty-four 32-bit words
+        for i in range(16, 64) {
+            s0 = int_xor(int_xor(rotr(w[i-15], 7), rotr(w[i-15], 18)), shr(w[i-15], 3))
+            s1 = int_xor(int_xor(rotr(w[i-2], 17), rotr(w[i-2], 19)), shr(w[i-2], 10))
+            word = bitwise_and(w[i-16] + s0 + w[i-7] + s1, 0xFFFFFFFF)
+            append(w, word)
+        }
+        
+        # Initialize working variables for this chunk
+        a = h[0]
+        b = h[1]
+        c = h[2]
+        d = h[3]
+        e = h[4]
+        f = h[5]
+        g = h[6]
+        hh = h[7]
+        
+        # Main loop
+        for i in range(64) {
+            S1 = int_xor(int_xor(rotr(e, 6), rotr(e, 11)), rotr(e, 25))
+            ch = int_xor(bitwise_and(e, f), bitwise_and(bitwise_not(e), g))
+            temp1 = bitwise_and(hh + S1 + ch + sha256_k[i] + w[i], 0xFFFFFFFF)
+            S0 = int_xor(int_xor(rotr(a, 2), rotr(a, 13)), rotr(a, 22))
+            maj = int_xor(int_xor(bitwise_and(a, b), bitwise_and(a, c)), bitwise_and(b, c))
+            temp2 = bitwise_and(S0 + maj, 0xFFFFFFFF)
+            
+            hh = g
+            g = f
+            f = e
+            e = bitwise_and(d + temp1, 0xFFFFFFFF)
+            d = c
+            c = b
+            b = a
+            a = bitwise_and(temp1 + temp2, 0xFFFFFFFF)
+        }
+        
+        # Add this chunk's hash to result so far
+        h[0] = bitwise_and(h[0] + a, 0xFFFFFFFF)
+        h[1] = bitwise_and(h[1] + b, 0xFFFFFFFF)
+        h[2] = bitwise_and(h[2] + c, 0xFFFFFFFF)
+        h[3] = bitwise_and(h[3] + d, 0xFFFFFFFF)
+        h[4] = bitwise_and(h[4] + e, 0xFFFFFFFF)
+        h[5] = bitwise_and(h[5] + f, 0xFFFFFFFF)
+        h[6] = bitwise_and(h[6] + g, 0xFFFFFFFF)
+        h[7] = bitwise_and(h[7] + hh, 0xFFFFFFFF)
+    }
+    
+    # Convert hash values to bytes
+    hash_bytes = []
+    for i in range(8) {
+        append(hash_bytes, (h[i] >> 24) & 0xFF)
+        append(hash_bytes, (h[i] >> 16) & 0xFF)
+        append(hash_bytes, (h[i] >> 8) & 0xFF)
+        append(hash_bytes, h[i] & 0xFF)
+    }
+    
+    return hash_bytes
+}
+
+# HMAC-SHA256 implementation
+hmac_sha256 = func(key, message) {
+    # Convert inputs to bytes if they are strings
+    key_bytes = []
+    if type(key) == "string" {
+        key_bytes = string_to_bytes(key)
+    } else {
+        key_bytes = key
+    }
+    
+    msg_bytes = []
+    if type(message) == "string" {
+        msg_bytes = string_to_bytes(message)
+    } else {
+        msg_bytes = message
+    }
+    
+    # If key is longer than 64 bytes, hash it
+    if length(key_bytes) > 64 {
+        key_bytes = sha256(key_bytes)
+    }
+    
+    # If key is shorter than 64 bytes, pad it with zeros
+    while length(key_bytes) < 64 {
+        append(key_bytes, 0x00)
+    }
+    
+    # Create inner and outer padded keys
+    ipad = []
+    opad = []
+    for i in range(64) {
+        append(ipad, int_xor(key_bytes[i], 0x36))
+        append(opad, int_xor(key_bytes[i], 0x5C))
+    }
+    
+    # Create inner hash: SHA256(ipad || message)
+    inner_input = []
+    for byte in ipad {
+        append(inner_input, byte)
+    }
+    for byte in msg_bytes {
+        append(inner_input, byte)
+    }
+    inner_hash = sha256(inner_input)
+    
+    # Create outer hash: SHA256(opad || inner_hash)
+    outer_input = []
+    for byte in opad {
+        append(outer_input, byte)
+    }
+    for byte in inner_hash {
+        append(outer_input, byte)
+    }
+    
+    return sha256(outer_input)
+}
+
+# Export functions for use in other policies
+main = rule {
+    true
+}

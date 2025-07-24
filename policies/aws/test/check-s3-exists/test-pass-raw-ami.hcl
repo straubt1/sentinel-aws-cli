@@ -29,3 +29,8 @@ mock "signature-signing" {
     source = "../../../../functions/signature-signing.sentinel"
   }
 }
+mock "sha" {
+  module {
+    source = "../../../../functions/sha.sentinel"
+  }
+}
