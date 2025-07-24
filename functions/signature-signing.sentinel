@@ -1,0 +1,286 @@
+import "json"
+
+# import "crypto"
+import "strings"
+import "time"
+
+# Helper function for bitwise AND operation (a & b)
+bitwise_and = func(a, b) {
+  result = 0
+  power = 1
+  
+  for range(32) as i {
+    if (int(a / power) % 2 == 1) and (int(b / power) % 2 == 1) {
+      result += power
+    }
+    power *= 2
+  }
+  
+  return result
+}
+
+# Helper function for bitwise NOT operation (~a)
+bitwise_not = func(a) {
+  return 0xFFFFFFFF - a
+}
+
+# Helper function for XOR operation (a ^ b)
+# xor = func(a, b) {
+#   result = 0
+#   power = 1
+  
+#   for range(32) as i {
+#     a_bit = int(a / power) % 2
+#     b_bit = int(b / power) % 2
+#     if a_bit != b_bit {
+#       result += power
+#     }
+#     power *= 2
+#   }
+  
+#   return result
+# }
+
+# Helper function for right rotation
+rotr = func(value, amount) {
+  # Simulate right rotation: (value >> amount) | (value << (32 - amount))
+  right_part = int(value / pow(2, amount))
+  left_part = (value * pow(2, 32 - amount)) % pow(2, 32)
+  
+  # Implement OR using: a | b = a + b - (a & b)
+  and_result = bitwise_and(right_part, left_part)
+  or_result = right_part + left_part - and_result
+  
+  return or_result % pow(2, 32)
+}
+
+# Helper function to convert string to byte array
+string_to_bytes = func(input) {
+  bytes = []
+  for range(length(input)) as i {
+    # Get character code using strings.char_code_at equivalent
+    char = strings.substr(input, i, 1)
+    # Simple ASCII conversion for basic characters
+    code = 0
+    if char == " " { code = 32 
+    } else if char == "!" { code = 33 
+    } else if char == "\"" { code = 34
+    } else if char == "#" { code = 35 
+    } else if char == "$" { code = 36 
+    } else if char == "%" { code = 37 
+    } else if char == "&" { code = 38 
+    } else if char == "'" { code = 39 
+    } else if char == "(" { code = 40 
+    } else if char == ")" { code = 41 
+    } else if char == "*" { code = 42 
+    } else if char == "+" { code = 43 
+    } else if char == "," { code = 44 
+    } else if char == "-" { code = 45 
+    } else if char == "." { code = 46 
+    } else if char == "/" { code = 47 
+    } else if char == "0" { code = 48 
+    } else if char == "1" { code = 49 
+    } else if char == "2" { code = 50 
+    } else if char == "3" { code = 51 
+    } else if char == "4" { code = 52 
+    } else if char == "5" { code = 53 
+    } else if char == "6" { code = 54 
+    } else if char == "7" { code = 55 
+    } else if char == "8" { code = 56 
+    } else if char == "9" { code = 57 
+    } else if char == ":" { code = 58 
+    } else if char == ";" { code = 59 
+    } else if char == "<" { code = 60 
+    } else if char == "=" { code = 61 
+    } else if char == ">" { code = 62 
+    } else if char == "?" { code = 63 
+    } else if char == "@" { code = 64 
+    } else if char == "A" { code = 65 
+    } else if char == "B" { code = 66 
+    } else if char == "C" { code = 67 
+    } else if char == "D" { code = 68 
+    } else if char == "E" { code = 69 
+    } else if char == "F" { code = 70 
+    } else if char == "G" { code = 71 
+    } else if char == "H" { code = 72 
+    } else if char == "I" { code = 73 
+    } else if char == "J" { code = 74 
+    } else if char == "K" { code = 75 
+    } else if char == "L" { code = 76 
+    } else if char == "M" { code = 77 
+    } else if char == "N" { code = 78 
+    } else if char == "O" { code = 79 
+    } else if char == "P" { code = 80 
+    } else if char == "Q" { code = 81 
+    } else if char == "R" { code = 82 
+    } else if char == "S" { code = 83 
+    } else if char == "T" { code = 84 
+    } else if char == "U" { code = 85 
+    } else if char == "V" { code = 86 
+    } else if char == "W" { code = 87 
+    } else if char == "X" { code = 88 
+    } else if char == "Y" { code = 89 
+    } else if char == "Z" { code = 90 
+    } else if char == "[" { code = 91 
+    } else if char == "\\" { code = 92 
+    } else if char == "]" { code = 93 
+    } else if char == "^" { code = 94 
+    } else if char == "_" { code = 95 
+    } else if char == "`" { code = 96 
+    } else if char == "a" { code = 97 
+    } else if char == "b" { code = 98 
+    } else if char == "c" { code = 99 
+    } else if char == "d" { code = 100 
+    } else if char == "e" { code = 101 
+    } else if char == "f" { code = 102 
+    } else if char == "g" { code = 103 
+    } else if char == "h" { code = 104 
+    } else if char == "i" { code = 105 
+    } else if char == "j" { code = 106 
+    } else if char == "k" { code = 107 
+    } else if char == "l" { code = 108 
+    } else if char == "m" { code = 109 
+    } else if char == "n" { code = 110 
+    } else if char == "o" { code = 111 
+    } else if char == "p" { code = 112 
+    } else if char == "q" { code = 113 
+    } else if char == "r" { code = 114 
+    } else if char == "s" { code = 115 
+    } else if char == "t" { code = 116 
+    } else if char == "u" { code = 117 
+    } else if char == "v" { code = 118 
+    } else if char == "w" { code = 119 
+    } else if char == "x" { code = 120 
+    } else if char == "y" { code = 121 
+    } else if char == "z" { code = 122 
+    } else if char == "{" { code = 123 
+    } else if char == "|" { code = 124 
+    } else if char == "}" { code = 125 
+    } else if char == "~" { code = 126 
+    } else { code = 32 } # Default to space for unknown char
+    
+    bytes = bytes + [code]
+  }
+  return bytes
+}
+
+# SHA-256 implementation for Sentinel
+sha256 = func(input) {
+  # Convert string to bytes
+  message_bytes = string_to_bytes(input)
+  
+  # Pre-processing: adding padding bits
+  original_length = length(message_bytes) * 8
+  message_bytes = message_bytes + [0x80]  # append bit '1' to message
+  
+  # Append zeros until message length ≡ 448 (mod 512)
+  current_bit_length = length(message_bytes) * 8
+  target_remainder = 448
+  current_remainder = current_bit_length % 512
+  
+  zeros_needed = 0
+  if current_remainder <= target_remainder {
+    zeros_needed = (target_remainder - current_remainder) / 8
+  } else {
+    zeros_needed = (512 - current_remainder + target_remainder) / 8
+  }
+  
+  for range(zeros_needed) as i {
+    message_bytes = message_bytes + [0x00]
+  }
+  
+  # Append original length as 64-bit big-endian integer
+  for range(8) as i {
+    byte_val = int((original_length / pow(256, (7 - i))) % 256)
+    message_bytes = message_bytes + [byte_val]
+  }
+  
+  # Initialize hash values (first 32 bits of fractional parts of square roots of first 8 primes)
+  h0 = 0x6a09e667
+  h1 = 0xbb67ae85
+  h2 = 0x3c6ef372
+  h3 = 0xa54ff53a
+  h4 = 0x510e527f
+  h5 = 0x9b05688c
+  h6 = 0x1f83d9ab
+  h7 = 0x5be0cd19
+  
+  # Initialize array of round constants
+  k = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+  ]
+  
+  # Process message in 512-bit chunks
+  num_chunks = length(message_bytes) / 64
+  
+  for range(num_chunks) as chunk_idx {
+    chunk_start = chunk_idx * 64
+    
+    # Break chunk into sixteen 32-bit big-endian words
+    w = []
+    for range(16) as i {
+      word = (message_bytes[chunk_start + i*4] * 16777216) +
+             (message_bytes[chunk_start + i*4 + 1] * 65536) +
+             (message_bytes[chunk_start + i*4 + 2] * 256) +
+             message_bytes[chunk_start + i*4 + 3]
+      w = w + [word]
+    }
+    
+    # Extend the sixteen 32-bit words into sixty-four 32-bit words
+    for range(16, 64) as i {
+      s0 = xor(xor(rotr(w[i-15], 7), rotr(w[i-15], 18)), int(w[i-15] / pow(2, 3)))
+      s1 = xor(xor(rotr(w[i-2], 17), rotr(w[i-2], 19)), int(w[i-2] / pow(2, 10)))
+      w = w + [(w[i-16] + s0 + w[i-7] + s1) % pow(2, 32)]
+    }
+    
+    # Initialize working variables
+    a = h0
+    b = h1
+    c = h2
+    d = h3
+    e = h4
+    f = h5
+    g = h6
+    h = h7
+    
+    # Main loop
+    for range(64) as i {
+      s1 = xor(xor(rotr(e, 6), rotr(e, 11)), rotr(e, 25))
+      ch = xor(bitwise_and(e, f), bitwise_and(bitwise_not(e), g))
+      temp1 = (h + s1 + ch + k[i] + w[i]) % pow(2, 32)
+      s0 = xor(xor(rotr(a, 2), rotr(a, 13)), rotr(a, 22))
+      maj = xor(xor(bitwise_and(a, b), bitwise_and(a, c)), bitwise_and(b, c))
+      temp2 = (s0 + maj) % pow(2, 32)
+      
+      h = g
+      g = f
+      f = e
+      e = (d + temp1) % pow(2, 32)
+      d = c
+      c = b
+      b = a
+      a = (temp1 + temp2) % pow(2, 32)
+    }
+    
+    # Add this chunk's hash to result so far
+    h0 = (h0 + a) % pow(2, 32)
+    h1 = (h1 + b) % pow(2, 32)
+    h2 = (h2 + c) % pow(2, 32)
+    h3 = (h3 + d) % pow(2, 32)
+    h4 = (h4 + e) % pow(2, 32)
+    h5 = (h5 + f) % pow(2, 32)
+    h6 = (h6 + g) % pow(2, 32)
+    h7 = (h7 + h) % pow(2, 32)
+  }
+  
+  # Produce final hash value as hex string
+  return sprintf("%08x%08x%08x%08x%08x%08x%08x%08x", h0, h1, h2, h3, h4, h5, h6, h7)
+}
+
