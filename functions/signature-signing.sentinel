@@ -4,6 +4,19 @@ import "json"
 import "strings"
 import "time"
 
+pow = func(base, exponent) {
+	if exponent == 0 {
+		return 1
+	}
+
+	result = 1
+	for range(exponent) as i {
+		result *= base
+	}
+
+	return result
+}
+
 # Helper function for bitwise AND operation (a & b)
 bitwise_and = func(a, b) {
 	result = 0
@@ -25,21 +38,21 @@ bitwise_not = func(a) {
 }
 
 # Helper function for XOR operation (a ^ b)
-# xor = func(a, b) {
-#   result = 0
-#   power = 1
+int_xor = func(a, b) {
+  result = 0
+  power = 1
 
-#   for range(32) as i {
-#     a_bit = int(a / power) % 2
-#     b_bit = int(b / power) % 2
-#     if a_bit != b_bit {
-#       result += power
-#     }
-#     power *= 2
-#   }
+  for range(32) as i {
+    a_bit = int(a / power) % 2
+    b_bit = int(b / power) % 2
+    if a_bit != b_bit {
+      result += power
+    }
+    power *= 2
+  }
 
-#   return result
-# }
+  return result
+}
 
 # Helper function for right rotation
 rotr = func(value, amount) {
@@ -58,8 +71,8 @@ rotr = func(value, amount) {
 string_to_bytes = func(input) {
 	bytes = []
 	for range(length(input)) as i {
-		# Get character code using strings.char_code_at equivalent
-		char = strings.substr(input, i, 1)
+		# Get character code using string indexing
+		char = input[i : i + 1]
 		# Simple ASCII conversion for basic characters
 		code = 0
 		if char == " " {
