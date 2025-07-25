@@ -1,3 +1,4 @@
+import "strings"
 # Helper Functions for Signature Signing
 
 
@@ -229,4 +230,438 @@ pow = func(base, exponent) {
 		result = result * base
 	}
 	return result
+}
+
+# XOR operation for 32-bit integers
+# This function performs a bitwise XOR operation on two integers
+# Example: int_xor(5, 3) returns 6 (binary: 0101 XOR 0011 = 0110)
+int_xor = func(a, b) {
+	# XOR truth table implementation for 32-bit integers
+	result = 0
+	bit = 1
+	for range(32) as i {
+		if ((a / bit) % 2) != ((b / bit) % 2) {
+			result = result + bit
+		}
+		bit = bit * 2
+	}
+	return result
+}
+
+# Bitwise AND operation for 32-bit integers
+# This function performs a bitwise AND operation on two integers
+# Example: bitwise_and(5, 3) returns 1 (binary: 0101 AND 0011 = 0001)
+bitwise_and = func(a, b) {
+	result = 0
+	bit = 1
+	for range(32) as i {
+		if ((a / bit) % 2) == 1 and ((b / bit) % 2) == 1 {
+			result = result + bit
+		}
+		bit = bit * 2
+	}
+	return result
+}
+
+# Bitwise NOT operation for 32-bit integers (with 32-bit mask)
+# This function performs a bitwise NOT operation on an integer
+# Example: bitwise_not(5) returns 4294967290 (binary: ~00000000000000000000000000000101 = 11111111111111111111111111111010)
+# Note: This assumes 32-bit representation, so the result is masked
+bitwise_not = func(a) {
+	return int_xor(a, 0xFFFFFFFF)
+}
+
+# Right rotate operation for 32-bit integers
+# This function performs a right rotation on a 32-bit integer
+# Example: rotr(0x12345678, 4) returns 0x81234567
+# Note: This assumes 32-bit representation, so the result is masked
+rotr = func(x, n) {
+	mask = 0xFFFFFFFF
+	x = bitwise_and(x, mask)
+	# Implement right rotation using division and multiplication
+	right_part = int(x / pow(2, n))
+	left_part = (x * pow(2, 32 - n)) % pow(2, 32)
+	# Implement OR using: a | b = a + b - (a & b)
+	and_result = bitwise_and(right_part, left_part)
+	or_result = right_part + left_part - and_result
+	return bitwise_and(or_result, mask)
+}
+
+
+# Right shift operation for 32-bit integers
+# This function performs a right shift on a 32-bit integer
+# Example: shr(0x12345678, 4) returns 0x01234567
+# Note: This assumes 32-bit representation, so the result is masked
+shr = func(x, n) {
+	return bitwise_and(int(x / pow(2, n)), 0xFFFFFFFF)
+}
+
+# Convert number to 8-character hex string
+# This function converts a 32-bit integer to an 8-character hexadecimal string
+# Example: to_hex8(0x12345678) returns "12345678"
+to_hex8 = func(num) {
+	hex_chars = "0123456789abcdef"
+	result = ""
+	for range(8) as i {
+		digit = int(num / pow(16, 7 - i)) % 16
+		result += hex_chars[digit : digit + 1]
+	}
+	return result
+}
+
+
+# Convert hex string to bytes array
+# This function converts a hexadecimal string to an array of bytes
+# Example: "1234" -> [0x12, 0x34]
+# Note: This function assumes the input string has an even length
+# Does not support odd-length strings
+# Does not support uppercase letters
+hex_to_bytes = func(hex_string) {
+	bytes = []
+	for range(length(hex_string) / 2) as i {
+		hex_pair = hex_string[i * 2 : i * 2 + 2]
+		byte_val = 0
+		for range(2) as j {
+			char = hex_pair[j : j + 1]
+			digit = 0
+			if char == "a" {
+				digit = 10
+			} else if char == "b" {
+				digit = 11
+			} else if char == "c" {
+				digit = 12
+			} else if char == "d" {
+				digit = 13
+			} else if char == "e" {
+				digit = 14
+			} else if char == "f" {
+				digit = 15
+			} else if char == "0" {
+				digit = 0
+			} else if char == "1" {
+				digit = 1
+			} else if char == "2" {
+				digit = 2
+			} else if char == "3" {
+				digit = 3
+			} else if char == "4" {
+				digit = 4
+			} else if char == "5" {
+				digit = 5
+			} else if char == "6" {
+				digit = 6
+			} else if char == "7" {
+				digit = 7
+			} else if char == "8" {
+				digit = 8
+			} else if char == "9" {
+				digit = 9
+			}
+			byte_val = byte_val * 16 + digit
+		}
+		bytes = bytes + [byte_val]
+	}
+	return bytes
+}
+
+# SHA-256 implementation that works directly with byte arrays
+sha256_bytes = func(message_bytes) {
+	# Pre-processing: adding padding bits
+	original_length = length(message_bytes) * 8
+	message_bytes = message_bytes + [0x80] # append bit '1' to message
+
+	# Append zeros until message length ≡ 448 (mod 512)
+	current_bit_length = length(message_bytes) * 8
+	target_remainder = 448
+	current_remainder = current_bit_length % 512
+
+	zeros_needed = 0
+	if current_remainder <= target_remainder {
+		zeros_needed = (target_remainder - current_remainder) / 8
+	} else {
+		zeros_needed = (512 - current_remainder + target_remainder) / 8
+	}
+
+	for range(zeros_needed) as i {
+		message_bytes = message_bytes + [0x00]
+	}
+
+	# Append original length as 64-bit big-endian integer
+	for range(8) as i {
+		byte_val = int((original_length / pow(256, (7 - i))) % 256)
+		message_bytes = message_bytes + [byte_val]
+	}
+
+	# Initialize hash values (first 32 bits of fractional parts of square roots of first 8 primes)
+	h0 = 0x6a09e667
+	h1 = 0xbb67ae85
+	h2 = 0x3c6ef372
+	h3 = 0xa54ff53a
+	h4 = 0x510e527f
+	h5 = 0x9b05688c
+	h6 = 0x1f83d9ab
+	h7 = 0x5be0cd19
+
+	# Initialize array of round constants
+	k = [
+		0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+		0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+		0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+		0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+		0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+		0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+		0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+		0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+	]
+
+	# Process message in 512-bit chunks
+	num_chunks = length(message_bytes) / 64
+
+	for range(num_chunks) as chunk_idx {
+		chunk_start = chunk_idx * 64
+
+		# Break chunk into sixteen 32-bit big-endian words
+		w = []
+		for range(16) as i {
+			word = (message_bytes[chunk_start + i * 4] * 16777216) +
+				(message_bytes[chunk_start + i * 4 + 1] * 65536) +
+				(message_bytes[chunk_start + i * 4 + 2] * 256) +
+				message_bytes[chunk_start + i * 4 + 3]
+			w = w + [word]
+		}
+
+		# Extend the sixteen 32-bit words into sixty-four 32-bit words
+		for range(16, 64) as i {
+			s0 = int_xor(int_xor(rotr(w[i - 15], 7), rotr(w[i - 15], 18)), int(w[i - 15] / pow(2, 3)))
+			s1 = int_xor(int_xor(rotr(w[i - 2], 17), rotr(w[i - 2], 19)), int(w[i - 2] / pow(2, 10)))
+			w = w + [(w[i - 16] + s0 + w[i - 7] + s1) % pow(2, 32)]
+		}
+
+		# Initialize working variables
+		a = h0
+		b = h1
+		c = h2
+		d = h3
+		e = h4
+		f = h5
+		g = h6
+		h = h7
+
+		# Main loop
+		for range(64) as i {
+			s1 = int_xor(int_xor(rotr(e, 6), rotr(e, 11)), rotr(e, 25))
+			ch = int_xor(bitwise_and(e, f), bitwise_and(bitwise_not(e), g))
+			temp1 = (h + s1 + ch + k[i] + w[i]) % pow(2, 32)
+			s0 = int_xor(int_xor(rotr(a, 2), rotr(a, 13)), rotr(a, 22))
+			maj = int_xor(int_xor(bitwise_and(a, b), bitwise_and(a, c)), bitwise_and(b, c))
+			temp2 = (s0 + maj) % pow(2, 32)
+
+			h = g
+			g = f
+			f = e
+			e = (d + temp1) % pow(2, 32)
+			d = c
+			c = b
+			b = a
+			a = (temp1 + temp2) % pow(2, 32)
+		}
+
+		# Add this chunk's hash to result so far
+		h0 = (h0 + a) % pow(2, 32)
+		h1 = (h1 + b) % pow(2, 32)
+		h2 = (h2 + c) % pow(2, 32)
+		h3 = (h3 + d) % pow(2, 32)
+		h4 = (h4 + e) % pow(2, 32)
+		h5 = (h5 + f) % pow(2, 32)
+		h6 = (h6 + g) % pow(2, 32)
+		h7 = (h7 + h) % pow(2, 32)
+	}
+
+	return to_hex8(h0) + to_hex8(h1) + to_hex8(h2) + to_hex8(h3) + to_hex8(h4) + to_hex8(h5) + to_hex8(h6) + to_hex8(h7)
+}
+
+
+# SHA-256 implementation
+# This function computes the SHA-256 hash of a given input string
+# Example: sha256("hello") returns the SHA-256 hash as a hexadecimal string "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+sha256 = func(input) {
+  # Convert string to bytes
+  message_bytes = string_to_bytes(input)
+
+  # Pre-processing: adding padding bits
+  original_length = length(message_bytes) * 8
+  message_bytes = message_bytes + [0x80] # append bit '1' to message
+
+  # Append zeros until message length ≡ 448 (mod 512)
+  current_bit_length = length(message_bytes) * 8
+  target_remainder = 448
+  current_remainder = current_bit_length % 512
+
+  zeros_needed = 0
+  if current_remainder <= target_remainder {
+    zeros_needed = (target_remainder - current_remainder) / 8
+  } else {
+    zeros_needed = (512 - current_remainder + target_remainder) / 8
+  }
+
+  for range(zeros_needed) as i {
+    message_bytes = message_bytes + [0x00]
+  }
+
+  # Append original length as 64-bit big-endian integer
+  for range(8) as i {
+    byte_val = int((original_length / pow(256, 7 - i)) % 256)
+    message_bytes = message_bytes + [byte_val]
+  }
+
+  # Initialize hash values (first 32 bits of fractional parts of square roots of first 8 primes)
+  h0 = 0x6a09e667
+  h1 = 0xbb67ae85
+  h2 = 0x3c6ef372
+  h3 = 0xa54ff53a
+  h4 = 0x510e527f
+  h5 = 0x9b05688c
+  h6 = 0x1f83d9ab
+  h7 = 0x5be0cd19
+
+  # Initialize array of round constants
+  k = [
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+  ]
+
+  # Process message in 512-bit chunks
+  num_chunks = length(message_bytes) / 64
+
+  for range(num_chunks) as chunk_idx {
+    chunk_start = chunk_idx * 64
+
+    # Break chunk into sixteen 32-bit big-endian words
+    w = []
+    for range(16) as i {
+      word = (message_bytes[chunk_start + i * 4] * 16777216) +
+        (message_bytes[chunk_start + i * 4 + 1] * 65536) +
+        (message_bytes[chunk_start + i * 4 + 2] * 256) +
+        message_bytes[chunk_start + i * 4 + 3]
+      w = w + [word]
+    }
+
+    # Extend the sixteen 32-bit words into sixty-four 32-bit words
+    for range(16, 64) as i {
+      s0 = int_xor(int_xor(rotr(w[i - 15], 7), rotr(w[i - 15], 18)), shr(w[i - 15], 3))
+      s1 = int_xor(int_xor(rotr(w[i - 2], 17), rotr(w[i - 2], 19)), shr(w[i - 2], 10))
+      w = w + [(w[i - 16] + s0 + w[i - 7] + s1) % pow(2, 32)]
+    }
+
+    # Initialize working variables
+    a = h0
+    b = h1
+    c = h2
+    d = h3
+    e = h4
+    f = h5
+    g = h6
+    h = h7
+
+    # Main loop
+    for range(64) as i {
+      s1 = int_xor(int_xor(rotr(e, 6), rotr(e, 11)), rotr(e, 25))
+      ch = int_xor(bitwise_and(e, f), bitwise_and(bitwise_not(e), g))
+      temp1 = (h + s1 + ch + k[i] + w[i]) % pow(2, 32)
+      s0 = int_xor(int_xor(rotr(a, 2), rotr(a, 13)), rotr(a, 22))
+      maj = int_xor(int_xor(bitwise_and(a, b), bitwise_and(a, c)), bitwise_and(b, c))
+      temp2 = (s0 + maj) % pow(2, 32)
+
+      h = g
+      g = f
+      f = e
+      e = (d + temp1) % pow(2, 32)
+      d = c
+      c = b
+      b = a
+      a = (temp1 + temp2) % pow(2, 32)
+    }
+
+    # Add this chunk's hash to result so far
+    h0 = (h0 + a) % pow(2, 32)
+    h1 = (h1 + b) % pow(2, 32)
+    h2 = (h2 + c) % pow(2, 32)
+    h3 = (h3 + d) % pow(2, 32)
+    h4 = (h4 + e) % pow(2, 32)
+    h5 = (h5 + f) % pow(2, 32)
+    h6 = (h6 + g) % pow(2, 32)
+    h7 = (h7 + h) % pow(2, 32)
+  }
+
+  return to_hex8(h0) + to_hex8(h1) + to_hex8(h2) + to_hex8(h3) + to_hex8(h4) + to_hex8(h5) + to_hex8(h6) + to_hex8(h7)
+}
+
+
+# HMAC-SHA256 implementation
+# This function computes the HMAC-SHA256 hash of a given key and message
+# Example: hmac_sha256("key:mysecretkey", "my message") returns the HMAC-SHA256 hash as a hexadecimal string
+hmac_sha256 = func(key, message) {
+	# Convert inputs to byte arrays
+	key_bytes = []
+	message_bytes = []
+
+	# Handle key input - could be string or hex key format
+	if strings.has_prefix(key, "key:") {
+		# Remove "key:" prefix and convert to bytes
+		key_string = key[4:length(key)]
+		key_bytes = string_to_bytes(key_string)
+	} else if strings.has_prefix(key, "hexkey:") {
+		# Remove "hexkey:" prefix and convert hex to bytes
+		hex_key = key[7:length(key)]
+		key_bytes = hex_to_bytes(hex_key)
+	} else {
+		# Treat as regular string
+		key_bytes = string_to_bytes(key)
+	}
+
+	# Convert message to bytes
+	message_bytes = string_to_bytes(message)
+
+	# HMAC-SHA256 algorithm
+	block_size = 64 # SHA-256 block size is 64 bytes
+
+	# If key is longer than block size, hash it
+	if length(key_bytes) > block_size {
+		# Use the byte-based SHA256 function to avoid conversion issues
+		key_hash = sha256_bytes(key_bytes)
+		key_bytes = hex_to_bytes(key_hash)
+	}
+
+	# Pad key to block size with zeros
+	if length(key_bytes) < block_size {
+		padding_needed = block_size - length(key_bytes)
+		for range(padding_needed) as i {
+			key_bytes = key_bytes + [0x00]
+		}
+	}
+
+	# Create inner and outer padding
+	ipad = []
+	opad = []
+	for range(block_size) as i {
+		ipad = ipad + [int_xor(key_bytes[i], 0x36)]
+		opad = opad + [int_xor(key_bytes[i], 0x5C)]
+	}
+
+	# Inner hash: hash(ipad || message)
+	inner_data = ipad + message_bytes
+	inner_hash = sha256_bytes(inner_data)
+	inner_hash_bytes = hex_to_bytes(inner_hash)
+
+	# Outer hash: hash(opad || inner_hash)
+	outer_data = opad + inner_hash_bytes
+	final_hash = sha256_bytes(outer_data)
+
+	return final_hash
 }
