@@ -380,271 +380,33 @@ hex_to_bytes = func(hex_string) {
 }
 
 # Convert a byte value (0-255) to its corresponding character
+# For cryptographic operations, we need to handle all 256 byte values correctly
 byte_to_char = func(byte_val) {
-	# Handle all ASCII characters and extended byte values
-	if byte_val == 0 {
-		return "\x00"
-	} else if byte_val == 1 {
-		return "\x01"
-	} else if byte_val == 2 {
-		return "\x02"
-	} else if byte_val == 3 {
-		return "\x03"
-	} else if byte_val == 4 {
-		return "\x04"
-	} else if byte_val == 5 {
-		return "\x05"
-	} else if byte_val == 6 {
-		return "\x06"
-	} else if byte_val == 7 {
-		return "\x07"
-	} else if byte_val == 8 {
-		return "\x08"
-	} else if byte_val == 9 {
-		return "\t"
-	} else if byte_val == 10 {
-		return "\n"
-	} else if byte_val == 11 {
-		return "\x0B"
-	} else if byte_val == 12 {
-		return "\x0C"
-	} else if byte_val == 13 {
-		return "\r"
-	} else if byte_val == 14 {
-		return "\x0E"
-	} else if byte_val == 15 {
-		return "\x0F"
-	} else if byte_val == 16 {
-		return "\x10"
-	} else if byte_val == 17 {
-		return "\x11"
-	} else if byte_val == 18 {
-		return "\x12"
-	} else if byte_val == 19 {
-		return "\x13"
-	} else if byte_val == 20 {
-		return "\x14"
-	} else if byte_val == 21 {
-		return "\x15"
-	} else if byte_val == 22 {
-		return "\x16"
-	} else if byte_val == 23 {
-		return "\x17"
-	} else if byte_val == 24 {
-		return "\x18"
-	} else if byte_val == 25 {
-		return "\x19"
-	} else if byte_val == 26 {
-		return "\x1A"
-	} else if byte_val == 27 {
-		return "\x1B"
-	} else if byte_val == 28 {
-		return "\x1C"
-	} else if byte_val == 29 {
-		return "\x1D"
-	} else if byte_val == 30 {
-		return "\x1E"
-	} else if byte_val == 31 {
-		return "\x1F"
-	} else if byte_val == 32 {
-		return " "
-	} else if byte_val == 33 {
-		return "!"
-	} else if byte_val == 34 {
-		return "\""
-	} else if byte_val == 35 {
-		return "#"
-	} else if byte_val == 36 {
-		return "$"
-	} else if byte_val == 37 {
-		return "%"
-	} else if byte_val == 38 {
-		return "&"
-	} else if byte_val == 39 {
-		return "'"
-	} else if byte_val == 40 {
-		return "("
-	} else if byte_val == 41 {
-		return ")"
-	} else if byte_val == 42 {
-		return "*"
-	} else if byte_val == 43 {
-		return "+"
-	} else if byte_val == 44 {
-		return ","
-	} else if byte_val == 45 {
-		return "-"
-	} else if byte_val == 46 {
-		return "."
-	} else if byte_val == 47 {
-		return "/"
-	} else if byte_val == 48 {
-		return "0"
-	} else if byte_val == 49 {
-		return "1"
-	} else if byte_val == 50 {
-		return "2"
-	} else if byte_val == 51 {
-		return "3"
-	} else if byte_val == 52 {
-		return "4"
-	} else if byte_val == 53 {
-		return "5"
-	} else if byte_val == 54 {
-		return "6"
-	} else if byte_val == 55 {
-		return "7"
-	} else if byte_val == 56 {
-		return "8"
-	} else if byte_val == 57 {
-		return "9"
-	} else if byte_val == 58 {
-		return ":"
-	} else if byte_val == 59 {
-		return ";"
-	} else if byte_val == 60 {
-		return "<"
-	} else if byte_val == 61 {
-		return "="
-	} else if byte_val == 62 {
-		return ">"
-	} else if byte_val == 63 {
-		return "?"
-	} else if byte_val == 64 {
-		return "@"
-	} else if byte_val == 65 {
-		return "A"
-	} else if byte_val == 66 {
-		return "B"
-	} else if byte_val == 67 {
-		return "C"
-	} else if byte_val == 68 {
-		return "D"
-	} else if byte_val == 69 {
-		return "E"
-	} else if byte_val == 70 {
-		return "F"
-	} else if byte_val == 71 {
-		return "G"
-	} else if byte_val == 72 {
-		return "H"
-	} else if byte_val == 73 {
-		return "I"
-	} else if byte_val == 74 {
-		return "J"
-	} else if byte_val == 75 {
-		return "K"
-	} else if byte_val == 76 {
-		return "L"
-	} else if byte_val == 77 {
-		return "M"
-	} else if byte_val == 78 {
-		return "N"
-	} else if byte_val == 79 {
-		return "O"
-	} else if byte_val == 80 {
-		return "P"
-	} else if byte_val == 81 {
-		return "Q"
-	} else if byte_val == 82 {
-		return "R"
-	} else if byte_val == 83 {
-		return "S"
-	} else if byte_val == 84 {
-		return "T"
-	} else if byte_val == 85 {
-		return "U"
-	} else if byte_val == 86 {
-		return "V"
-	} else if byte_val == 87 {
-		return "W"
-	} else if byte_val == 88 {
-		return "X"
-	} else if byte_val == 89 {
-		return "Y"
-	} else if byte_val == 90 {
-		return "Z"
-	} else if byte_val == 91 {
-		return "["
-	} else if byte_val == 92 {
-		return "\\"
-	} else if byte_val == 93 {
-		return "]"
-	} else if byte_val == 94 {
-		return "^"
-	} else if byte_val == 95 {
-		return "_"
-	} else if byte_val == 96 {
-		return "`"
-	} else if byte_val == 97 {
-		return "a"
-	} else if byte_val == 98 {
-		return "b"
-	} else if byte_val == 99 {
-		return "c"
-	} else if byte_val == 100 {
-		return "d"
-	} else if byte_val == 101 {
-		return "e"
-	} else if byte_val == 102 {
-		return "f"
-	} else if byte_val == 103 {
-		return "g"
-	} else if byte_val == 104 {
-		return "h"
-	} else if byte_val == 105 {
-		return "i"
-	} else if byte_val == 106 {
-		return "j"
-	} else if byte_val == 107 {
-		return "k"
-	} else if byte_val == 108 {
-		return "l"
-	} else if byte_val == 109 {
-		return "m"
-	} else if byte_val == 110 {
-		return "n"
-	} else if byte_val == 111 {
-		return "o"
-	} else if byte_val == 112 {
-		return "p"
-	} else if byte_val == 113 {
-		return "q"
-	} else if byte_val == 114 {
-		return "r"
-	} else if byte_val == 115 {
-		return "s"
-	} else if byte_val == 116 {
-		return "t"
-	} else if byte_val == 117 {
-		return "u"
-	} else if byte_val == 118 {
-		return "v"
-	} else if byte_val == 119 {
-		return "w"
-	} else if byte_val == 120 {
-		return "x"
-	} else if byte_val == 121 {
-		return "y"
-	} else if byte_val == 122 {
-		return "z"
-	} else if byte_val == 123 {
-		return "{"
-	} else if byte_val == 124 {
-		return "|"
-	} else if byte_val == 125 {
-		return "}"
-	} else if byte_val == 126 {
-		return "~"
-	} else if byte_val == 127 {
-		return "\x7F"
+	# Create a lookup table for all 256 possible byte values
+	# This is more reliable than using escape sequences
+	chars = [
+		"\x00", "\x01", "\x02", "\x03", "\x04", "\x05", "\x06", "\x07", "\x08", "\t", "\n", "\x0B", "\x0C", "\r", "\x0E", "\x0F",
+		"\x10", "\x11", "\x12", "\x13", "\x14", "\x15", "\x16", "\x17", "\x18", "\x19", "\x1A", "\x1B", "\x1C", "\x1D", "\x1E", "\x1F",
+		" ", "!", "\"", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/",
+		"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?",
+		"@", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",
+		"P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "[", "\\", "]", "^", "_",
+		"`", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
+		"p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "{", "|", "}", "~", "\x7F",
+	]
+
+	# For bytes 0-127, use the lookup table
+	if byte_val <= 127 {
+		return chars[byte_val]
 	} else {
-		# For bytes 128-255, we need to create a representation
-		# Since Sentinel may not support all extended ASCII directly,
-		# we'll create a hex escape sequence
+		# For bytes 128-255, we'll use a different approach
+		# Since Sentinel might not handle all extended ASCII well,
+		# we'll encode these as their decimal equivalent in a way that can be reconstructed
+		# This is a workaround specific to cryptographic operations
 		hex_chars = "0123456789abcdef"
 		high_nibble = int(byte_val / 16)
 		low_nibble = byte_val % 16
+		# Use a special prefix that we can detect and convert back
 		return "\\x" + hex_chars[high_nibble : high_nibble + 1] + hex_chars[low_nibble : low_nibble + 1]
 	}
 }
@@ -655,6 +417,122 @@ sha256 = func(input) {
 	# print("Calling string_to_bytes (sha256):", input)
 	message_bytes = string_to_bytes(input)
 
+	# Pre-processing: adding padding bits
+	original_length = length(message_bytes) * 8
+	message_bytes = message_bytes + [0x80] # append bit '1' to message
+
+	# Append zeros until message length ≡ 448 (mod 512)
+	current_bit_length = length(message_bytes) * 8
+	target_remainder = 448
+	current_remainder = current_bit_length % 512
+
+	zeros_needed = 0
+	if current_remainder <= target_remainder {
+		zeros_needed = (target_remainder - current_remainder) / 8
+	} else {
+		zeros_needed = (512 - current_remainder + target_remainder) / 8
+	}
+
+	for range(zeros_needed) as i {
+		message_bytes = message_bytes + [0x00]
+	}
+
+	# Append original length as 64-bit big-endian integer
+	for range(8) as i {
+		byte_val = int((original_length / pow(256, (7 - i))) % 256)
+		message_bytes = message_bytes + [byte_val]
+	}
+
+	# Initialize hash values (first 32 bits of fractional parts of square roots of first 8 primes)
+	h0 = 0x6a09e667
+	h1 = 0xbb67ae85
+	h2 = 0x3c6ef372
+	h3 = 0xa54ff53a
+	h4 = 0x510e527f
+	h5 = 0x9b05688c
+	h6 = 0x1f83d9ab
+	h7 = 0x5be0cd19
+
+	# Initialize array of round constants
+	k = [
+		0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+		0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+		0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+		0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+		0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+		0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+		0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+		0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+	]
+
+	# Process message in 512-bit chunks
+	num_chunks = length(message_bytes) / 64
+
+	for range(num_chunks) as chunk_idx {
+		chunk_start = chunk_idx * 64
+
+		# Break chunk into sixteen 32-bit big-endian words
+		w = []
+		for range(16) as i {
+			word = (message_bytes[chunk_start + i * 4] * 16777216) +
+				(message_bytes[chunk_start + i * 4 + 1] * 65536) +
+				(message_bytes[chunk_start + i * 4 + 2] * 256) +
+				message_bytes[chunk_start + i * 4 + 3]
+			w = w + [word]
+		}
+
+		# Extend the sixteen 32-bit words into sixty-four 32-bit words
+		for range(16, 64) as i {
+			s0 = int_xor(int_xor(rotr(w[i - 15], 7), rotr(w[i - 15], 18)), int(w[i - 15] / pow(2, 3)))
+			s1 = int_xor(int_xor(rotr(w[i - 2], 17), rotr(w[i - 2], 19)), int(w[i - 2] / pow(2, 10)))
+			w = w + [(w[i - 16] + s0 + w[i - 7] + s1) % pow(2, 32)]
+		}
+
+		# Initialize working variables
+		a = h0
+		b = h1
+		c = h2
+		d = h3
+		e = h4
+		f = h5
+		g = h6
+		h = h7
+
+		# Main loop
+		for range(64) as i {
+			s1 = int_xor(int_xor(rotr(e, 6), rotr(e, 11)), rotr(e, 25))
+			ch = int_xor(bitwise_and(e, f), bitwise_and(bitwise_not(e), g))
+			temp1 = (h + s1 + ch + k[i] + w[i]) % pow(2, 32)
+			s0 = int_xor(int_xor(rotr(a, 2), rotr(a, 13)), rotr(a, 22))
+			maj = int_xor(int_xor(bitwise_and(a, b), bitwise_and(a, c)), bitwise_and(b, c))
+			temp2 = (s0 + maj) % pow(2, 32)
+
+			h = g
+			g = f
+			f = e
+			e = (d + temp1) % pow(2, 32)
+			d = c
+			c = b
+			b = a
+			a = (temp1 + temp2) % pow(2, 32)
+		}
+
+		# Add this chunk's hash to result so far
+		h0 = (h0 + a) % pow(2, 32)
+		h1 = (h1 + b) % pow(2, 32)
+		h2 = (h2 + c) % pow(2, 32)
+		h3 = (h3 + d) % pow(2, 32)
+		h4 = (h4 + e) % pow(2, 32)
+		h5 = (h5 + f) % pow(2, 32)
+		h6 = (h6 + g) % pow(2, 32)
+		h7 = (h7 + h) % pow(2, 32)
+	}
+
+	return to_hex8(h0) + to_hex8(h1) + to_hex8(h2) + to_hex8(h3) + to_hex8(h4) + to_hex8(h5) + to_hex8(h6) + to_hex8(h7)
+}
+
+# SHA-256 implementation that works directly with byte arrays
+sha256_bytes = func(message_bytes) {
 	# Pre-processing: adding padding bits
 	original_length = length(message_bytes) * 8
 	message_bytes = message_bytes + [0x80] # append bit '1' to message
@@ -797,13 +675,8 @@ hmac_sha256 = func(key, message) {
 
 	# If key is longer than block size, hash it
 	if length(key_bytes) > block_size {
-		# Convert key bytes to string for hashing
-		key_string = ""
-		for key_bytes as byte {
-			key_string = key_string + byte_to_char(byte)
-		}
-
-		key_hash = sha256(key_string)
+		# Use the byte-based SHA256 function to avoid conversion issues
+		key_hash = sha256_bytes(key_bytes)
 		key_bytes = hex_to_bytes(key_hash)
 	}
 
@@ -825,33 +698,14 @@ hmac_sha256 = func(key, message) {
 
 	# Inner hash: hash(ipad || message)
 	inner_data = ipad + message_bytes
-	# Convert bytes to string for SHA256 function
-	inner_string = ""
-	for inner_data as byte {
-		inner_string = inner_string + byte_to_char(byte)
-	}
-
-	inner_hash = sha256(inner_string)
+	inner_hash = sha256_bytes(inner_data)
 	inner_hash_bytes = hex_to_bytes(inner_hash)
 
 	# Outer hash: hash(opad || inner_hash)
 	outer_data = opad + inner_hash_bytes
-	# Convert bytes to string for SHA256 function
-	outer_string = ""
-	for outer_data as byte {
-		outer_string = outer_string + byte_to_char(byte)
-	}
+	final_hash = sha256_bytes(outer_data)
 
-	# final_hash = sha256(outer_string)
-	# final_hash_bytes = hex_to_bytes(final_hash)
-
-	# # Convert final HMAC bytes to string
-	# hmac_string = ""
-	# for final_hash_bytes as byte {
-	# 	hmac_string = hmac_string + byte_to_char(byte)
-	# }
-
-	return sha256(outer_string)
+	return final_hash
 }
 
 # Export functions for use in other policies
