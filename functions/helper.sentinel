@@ -1,5 +1,6 @@
 import "strings"
 import "time"
+import "types"
 
 # Function to get current date in YYYYMMDD format
 # This function returns the current date formatted as YYYYMMDD
@@ -726,4 +727,272 @@ hmac_sha256 = func(key, message) {
 	final_hash = sha256_bytes(outer_data)
 
 	return final_hash
+}
+
+# XML to JSON parser function
+# This function converts XML string to JSON-like data structure
+# Example: xml_to_json("<person><name>John</name><age>30</age></person>")
+# Returns: {"person": {"name": "John", "age": "30"}}
+xml_to_json = func(xml_string) {
+	# Remove leading/trailing whitespace
+	xml_string = strings.trim_space(xml_string)
+
+	# If empty string, return empty object
+	if length(xml_string) == 0 {
+		return {}
+	}
+
+	# Parse the XML string
+	result = parse_xml_element(xml_string, 0)
+	return result.value
+}
+
+# Helper function to parse a single XML element
+# Returns: {value: parsed_object, next_pos: position_after_element}
+parse_xml_element = func(xml_string, start_pos) {
+	# Skip whitespace
+	pos = skip_whitespace(xml_string, start_pos)
+
+	# Check if we're at the end
+	if pos >= length(xml_string) {
+		return {value: {}, next_pos: pos}
+	}
+
+	# Must start with '<'
+	if xml_string[pos : pos + 1] != "<" {
+		return {value: {}, next_pos: pos}
+	}
+
+	# Find the end of the opening tag
+	tag_end = find_char(xml_string, ">", pos + 1)
+	if tag_end == -1 {
+		return {value: {}, next_pos: pos}
+	}
+
+	# Extract the tag content
+	tag_content = xml_string[pos + 1 : tag_end]
+
+	# Check if it's a self-closing tag
+	is_self_closing = strings.has_suffix(tag_content, "/")
+	if is_self_closing {
+		tag_content = strings.trim_space(tag_content[0 : length(tag_content) - 1])
+	}
+
+	# Parse tag name and attributes
+	tag_parts = parse_tag_and_attributes(tag_content)
+	tag_name = tag_parts.tag_name
+	attributes = tag_parts.attributes
+
+	# If self-closing, return just the attributes (or empty object)
+	if is_self_closing {
+		element_value = {}
+		if length(attributes) > 0 {
+			element_value = attributes
+		}
+		return {value: {(tag_name): element_value}, next_pos: tag_end + 1}
+	}
+
+	# Find the closing tag
+	closing_tag = "</" + tag_name + ">"
+	closing_pos = find_string(xml_string, closing_tag, tag_end + 1)
+	if closing_pos == -1 {
+		return {value: {}, next_pos: pos}
+	}
+
+	# Extract content between tags
+	content = xml_string[tag_end + 1 : closing_pos]
+	content = strings.trim_space(content)
+
+	# Parse the content
+	element_value = {}
+
+	# Add attributes if any
+	for attributes as attr_name, attr_value {
+		element_value["@" + attr_name] = attr_value
+	}
+
+	# Parse child elements or text content
+	if length(content) > 0 {
+		if strings.has_prefix(content, "<") {
+			# Has child elements
+			children = parse_xml_children(content)
+			for children as child_name, child_value {
+				element_value[child_name] = child_value
+			}
+		} else {
+			# Text content
+			element_value["#text"] = content
+		}
+	}
+
+	# If element has no attributes and only text, simplify
+	if length(attributes) == 0 and length(element_value) == 1 and element_value["#text"] != null {
+		element_value = element_value["#text"]
+	}
+
+	return {value: {(tag_name): element_value}, next_pos: closing_pos + length(closing_tag)}
+}
+
+# Helper function to parse tag name and attributes
+# Returns: {tag_name: "name", attributes: {attr1: "value1", attr2: "value2"}}
+parse_tag_and_attributes = func(tag_content) {
+	# Split by spaces to separate tag name from attributes
+	parts = strings.split(tag_content, " ")
+	tag_name = parts[0]
+	attributes = {}
+
+	# Parse attributes
+	if length(parts) > 1 {
+		for range(1, length(parts)) as i {
+			attr_part = strings.trim_space(parts[i])
+			if length(attr_part) > 0 {
+				eq_pos = find_char(attr_part, "=", 0)
+				if eq_pos != -1 {
+					attr_name = strings.trim_space(attr_part[0:eq_pos])
+					attr_value = strings.trim_space(attr_part[eq_pos + 1 : length(attr_part)])
+
+					# Remove quotes from attribute value
+					if length(attr_value) >= 2 {
+						if (strings.has_prefix(attr_value, "\"") and strings.has_suffix(attr_value, "\"")) or
+							(strings.has_prefix(attr_value, "'") and strings.has_suffix(attr_value, "'")) {
+							attr_value = attr_value[1 : length(attr_value) - 1]
+						}
+					}
+
+					attributes[attr_name] = attr_value
+				}
+			}
+		}
+	}
+
+	return {tag_name: tag_name, attributes: attributes}
+}
+
+# Helper function to parse child elements
+parse_xml_children = func(content) {
+	children = {}
+	pos = 0
+
+	for range(length(content)) as _ {
+		pos = skip_whitespace(content, pos)
+		if pos >= length(content) {
+			break
+		}
+
+		if content[pos : pos + 1] == "<" {
+			result = parse_xml_element(content, pos)
+
+			# Merge the result into children
+			for result.value as child_name, child_value {
+				if children[child_name] != null {
+					# Handle multiple elements with same name
+					if types.type_of(children[child_name]) != "list" {
+						children[child_name] = [children[child_name]]
+					}
+					children[child_name] = children[child_name] + [child_value]
+				} else {
+					children[child_name] = child_value
+				}
+			}
+
+			pos = result.next_pos
+		} else {
+			# Skip non-tag content (shouldn't happen in well-formed XML)
+			pos = pos + 1
+		}
+	}
+
+	return children
+}
+
+# Helper function to skip whitespace characters
+skip_whitespace = func(str, start_pos) {
+	pos = start_pos
+	for range(start_pos, length(str)) as i {
+		char = str[i : i + 1]
+		if char == " " or char == "\t" or char == "\n" or char == "\r" {
+			pos = i + 1
+		} else {
+			break
+		}
+	}
+	return pos
+}
+
+# Helper function to find a character in a string starting from a position
+find_char = func(str, char, start_pos) {
+	for range(start_pos, length(str)) as i {
+		if str[i : i + 1] == char {
+			return i
+		}
+	}
+	return -1
+}
+
+# Helper function to find a substring in a string starting from a position
+find_string = func(str, substring, start_pos) {
+	sub_len = length(substring)
+	if sub_len == 0 {
+		return start_pos
+	}
+
+	for range(start_pos, length(str) - sub_len + 1) as i {
+		if str[i : i + sub_len] == substring {
+			return i
+		}
+	}
+	return -1
+}
+
+# JSON to XML converter function (bonus feature)
+# This function converts JSON-like data structure back to XML string
+# Example: json_to_xml({"person": {"name": "John", "age": "30"}})
+# Returns: "<person><name>John</name><age>30</age></person>"
+json_to_xml = func(json_obj) {
+	return convert_json_to_xml(json_obj, "")
+}
+
+# Helper function for JSON to XML conversion
+convert_json_to_xml = func(obj, indent) {
+	result = ""
+
+	if types.type_of(obj) == "map" {
+		for obj as key, value {
+			if strings.has_prefix(key, "@") {
+				# Skip attributes for now (would need to be handled in parent)
+				continue
+			} else if key == "#text" {
+				result = result + string(value)
+			} else {
+				if types.type_of(value) == "list" {
+					# Handle arrays
+					for value as item {
+						result = result + indent + "<" + key + ">"
+						if types.type_of(item) == "map" or types.type_of(item) == "list" {
+							result = result + "\n" + convert_json_to_xml(item, indent + "  ") + "\n" + indent
+						} else {
+							result = result + string(item)
+						}
+						result = result + "</" + key + ">\n"
+					}
+				} else {
+					result = result + indent + "<" + key + ">"
+					if types.type_of(value) == "map" or types.type_of(value) == "list" {
+						result = result + "\n" + convert_json_to_xml(value, indent + "  ") + "\n" + indent
+					} else {
+						result = result + string(value)
+					}
+					result = result + "</" + key + ">\n"
+				}
+			}
+		}
+	} else if types.type_of(obj) == "list" {
+		for obj as item {
+			result = result + convert_json_to_xml(item, indent)
+		}
+	} else {
+		result = result + string(obj)
+	}
+
+	return strings.trim_space(result)
 }

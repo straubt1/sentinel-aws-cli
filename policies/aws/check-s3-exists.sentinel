@@ -1,70 +1,120 @@
-# import "tfplan-functions" as plan
-import "signature-signing" as signing
-# import "hcp-test-config" as hcp_test_config
+import "helper"
+import "aws-test-credentials" as aws_test_credentials
+
 import "http"
 import "strings"
 import "json"
 import "time"
 
-# Parameters for HCP credentials
-param hcp_client_id default ""
-param hcp_client_secret default ""
-param hcp_organization_id default ""
-param hcp_project_id default ""
+# Parameters for AWS credentials
+param aws_access_key_id default ""
+param aws_secret_access_key default ""
 
-
-# print(signing.pow(2,4))
-
-a= signing.sha256("test")
-print("SHA256 of 'test':", a )
-
-# Hardcoded test for AWS SigV4 signing
-test_method = "GET"
-test_service = "s3"
-test_region = "us-east-1"
-test_host = "mybucket.s3.amazonaws.com"
-test_path = "/"
-test_access_key = "AKIAIOSFODNN7EXAMPLE"
-test_secret_key = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-test_headers = {
-  "host": test_host,
-  "x-amz-date": "20220101T120000Z",
+# This is only needed for testing purposes
+if aws_access_key_id is "" or aws_secret_access_key is "" {
+	print("AWS credentials are not set. Using the static import for testing purposes.")
+	aws_access_key_id = aws_test_credentials.aws_access_key_id
+	aws_secret_access_key = aws_test_credentials.aws_secret_access_key
 }
-test_query_params = {}
 
-signed_request = signing.aws_sign_v4(
-  test_method,
-  "https://" + test_host + test_path,
-  test_headers,
-  "",
-  test_access_key,
-  test_secret_key,
-  test_region,
-  test_service,
-)
-
-
-print("AWS SigV4 signed request:", signed_request)
-
-# if hcp_client_id is "" or hcp_client_secret is "" or hcp_organization_id is "" or hcp_project_id is "" {
-# 	print("HCP credentials are not set. Using the static import for testing purposes.")
-# 	hcp_client_id = hcp_test_config.hcp_client_id
-# 	hcp_client_secret = hcp_test_config.hcp_client_secret
-# 	hcp_organization_id = hcp_test_config.hcp_organization_id
-# 	hcp_project_id = hcp_test_config.hcp_project_id
-# }
+AWS_ACCESS_KEY_ID = aws_access_key_id
+AWS_SECRET_ACCESS_KEY = aws_secret_access_key
 
 start = time.now
 
-# Configure HCP functions
-# hcp.setHCPConfiguration(hcp_client_id, hcp_client_secret, hcp_organization_id, hcp_project_id)
+AMI_ID = "ami-0040e243c5f8879c3"
+REGION = "us-east-1"
+SERVICE = "ec2"
+HOST = "ec2." + REGION + ".amazonaws.com"
+ENDPOINT = "https://" + HOST + "/"
+METHOD = "GET"
+DATE = helper.get_current_date() #"20250725"
+TIME = helper.get_current_time() #"20250725T212717Z"
 
-# Get all resources of type aws_instance from the Terraform plan
-# allEC2Instances = plan.find_resources("aws_instance")
+# Create query string for DescribeImages action
+QUERY_STRING = "Action=DescribeImages&ImageId.1=" + AMI_ID + "&Version=2016-11-15"
+
+# Create canonical URI (root path)
+CANONICAL_URI = "/"
+
+# Create canonical headers
+CANONICAL_HEADERS = "host:" + HOST + "\n" +
+	"x-amz-date:" +
+	TIME +
+	"\n"
+
+# Create signed headers
+SIGNED_HEADERS = "host;x-amz-date"
+
+# Create payload hash (empty for GET request)
+PAYLOAD = ""
+PAYLOAD_HASH = helper.sha256(PAYLOAD)
+
+# Create canonical request
+CANONICAL_REQUEST = METHOD + "\n" +
+	CANONICAL_URI +
+	"\n" +
+	QUERY_STRING +
+	"\n" +
+	CANONICAL_HEADERS +
+	"\n" +
+	SIGNED_HEADERS +
+	"\n" +
+	PAYLOAD_HASH
+
+ALGORITHM = "AWS4-HMAC-SHA256"
+CREDENTIAL_SCOPE = DATE + "/" + REGION + "/" + SERVICE + "/aws4_request"
+STRING_TO_SIGN = ALGORITHM + "\n" +
+	TIME +
+	"\n" +
+	CREDENTIAL_SCOPE +
+	"\n" +
+	helper.sha256(CANONICAL_REQUEST)
+
+DATE_KEY = helper.hmac_sha256("key:AWS4" + AWS_SECRET_ACCESS_KEY, DATE)
+DATE_REGION_KEY = helper.hmac_sha256("hexkey:" + DATE_KEY, REGION)                    # hex
+DATE_REGION_SERVICE_KEY = helper.hmac_sha256("hexkey:" + DATE_REGION_KEY, SERVICE)    # hex
+SIGNING_KEY = helper.hmac_sha256("hexkey:" + DATE_REGION_SERVICE_KEY, "aws4_request") # hex
+
+SIGNATURE = helper.hmac_sha256("hexkey:" + SIGNING_KEY, STRING_TO_SIGN)
+
+AUTHORIZATION = ALGORITHM + " Credential=" + AWS_ACCESS_KEY_ID + "/" + CREDENTIAL_SCOPE +
+	", SignedHeaders=" +
+	SIGNED_HEADERS +
+	", Signature=" +
+	SIGNATURE
+
+# print("---------------------------------------")
+# print("Host:", HOST)
+# print("URL:", ENDPOINT + "?" + QUERY_STRING)
+# print("Time:", TIME)
+# print("Authorization: " + AUTHORIZATION)
+
+ep = ENDPOINT + "?" + QUERY_STRING
+
+req = http.request(ep).with_header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8").with_header("X-Amz-Date", TIME).with_header("Authorization", AUTHORIZATION)
+response = http.accept_status_codes([200, 401, 403, 500]).get(req)
+
+print("Response:")
+
+# print("Status Code:", response.status_code)
+# print("Headers:", response.headers)
+# print("Body:", helper.xml_to_json(response.body))
+# print("Body:", response.body)
+
+ss = strings.split(response.body, "\n")
+
+for ss as line {
+	trimmed_line = strings.trim_space(line)
+	if strings.has_prefix(trimmed_line, "<name>") {
+		print(trimmed_line)
+	}
+}
 
 instance_violations = {}
+
 # if length(allEC2Instances) > 0 {
-# 	instance_violations = validateImageIds(allEC2Instances)
+#  instance_violations = validateImageIds(allEC2Instances)
 # }
 
 stop = time.now
