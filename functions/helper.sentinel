@@ -216,3 +216,17 @@ string_to_bytes = func(s) {
 	}
 	return bytes
 }
+
+# Calculate the power of a number
+# This function computes base raised to the exponent
+# Example: pow(2, 3) returns 8
+pow = func(base, exponent) {
+	if exponent == 0 {
+		return 1
+	}
+	result = 1
+	for range(exponent) as i {
+		result = result * base
+	}
+	return result
+}
