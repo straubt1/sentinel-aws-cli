@@ -33,14 +33,14 @@ test_cases = [
 		"description": "Empty hex string",
 	},
 	# {
-	# 	"input":       ["ABCD"],
-	# 	"expected":    [0xAB, 0xCD],
-	# 	"description": "Hex string with uppercase letters",
+	#  "input":       ["ABCD"],
+	#  "expected":    [0xAB, 0xCD],
+	#  "description": "Hex string with uppercase letters",
 	# },
 	# {
-	# 	"input":       ["a"],
-	# 	"expected":    [0x0a],
-	# 	"description": "Odd length hex string (single character)",
+	#  "input":       ["a"],
+	#  "expected":    [0x0a],
+	#  "description": "Odd length hex string (single character)",
 	# },
 ]
 

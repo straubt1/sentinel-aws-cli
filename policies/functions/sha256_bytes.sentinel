@@ -3,7 +3,7 @@ import "helper"
 # Test cases array for easy modification
 test_cases = [
 	{
-		"input":       [4,3,5],
+		"input":       [4, 3, 5],
 		"expected":    "40d8597ea9a489ae7d1e43e93de718c7c5ccdf3299fd58493b2f6f777d51550d",
 		"description": "Basic HMAC-SHA256 hash",
 	},

@@ -24,13 +24,18 @@ test {
 #   }
 # }
 
-mock "signature-signing" {
+# mock "signature-signing" {
+#   module {
+#     source = "../../../../functions/signature-signing.sentinel"
+#   }
+# }
+# mock "sha" {
+#   module {
+#     source = "../../../../functions/sha.sentinel"
+#   }
+# }
+mock "helper" {
   module {
-    source = "../../../../functions/signature-signing.sentinel"
-  }
-}
-mock "sha" {
-  module {
-    source = "../../../../functions/sha.sentinel"
+    source = "../../../../functions/helper.sentinel"
   }
 }

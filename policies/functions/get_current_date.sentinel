@@ -2,11 +2,11 @@ import "helper"
 
 # Test cases array for easy modification
 test_cases = [
-  {
-    "input":       [],
-    "expected":    ""	,
-    "description": "Get Date with no input",
-  },
+	{
+		"input":       [],
+		"expected":    "",
+		"description": "Get Date with no input",
+	},
 ]
 
 # Execute all test cases
