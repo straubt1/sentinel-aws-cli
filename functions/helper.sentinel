@@ -1,0 +1,218 @@
+# Helper Functions for Signature Signing
+
+
+# Convert a string to an array of bytes
+# This function converts each character in the string to its ASCII byte value
+# Example: "abc" -> [97, 98, 99]
+string_to_bytes = func(s) {
+	bytes = []
+	for range(length(s)) as i {
+		char_code = 0
+		char = s[i : i + 1]
+
+		# Convert character to ASCII value using if/else chain
+		if char == "a" {
+			char_code = 97
+		} else if char == "b" {
+			char_code = 98
+		} else if char == "c" {
+			char_code = 99
+		} else if char == "d" {
+			char_code = 100
+		} else if char == "e" {
+			char_code = 101
+		} else if char == "f" {
+			char_code = 102
+		} else if char == "g" {
+			char_code = 103
+		} else if char == "h" {
+			char_code = 104
+		} else if char == "i" {
+			char_code = 105
+		} else if char == "j" {
+			char_code = 106
+		} else if char == "k" {
+			char_code = 107
+		} else if char == "l" {
+			char_code = 108
+		} else if char == "m" {
+			char_code = 109
+		} else if char == "n" {
+			char_code = 110
+		} else if char == "o" {
+			char_code = 111
+		} else if char == "p" {
+			char_code = 112
+		} else if char == "q" {
+			char_code = 113
+		} else if char == "r" {
+			char_code = 114
+		} else if char == "s" {
+			char_code = 115
+		} else if char == "t" {
+			char_code = 116
+		} else if char == "u" {
+			char_code = 117
+		} else if char == "v" {
+			char_code = 118
+		} else if char == "w" {
+			char_code = 119
+		} else if char == "x" {
+			char_code = 120
+		} else if char == "y" {
+			char_code = 121
+		} else if char == "z" {
+			char_code = 122
+		} else if char == "A" {
+			char_code = 65
+		} else if char == "B" {
+			char_code = 66
+		} else if char == "C" {
+			char_code = 67
+		} else if char == "D" {
+			char_code = 68
+		} else if char == "E" {
+			char_code = 69
+		} else if char == "F" {
+			char_code = 70
+		} else if char == "G" {
+			char_code = 71
+		} else if char == "H" {
+			char_code = 72
+		} else if char == "I" {
+			char_code = 73
+		} else if char == "J" {
+			char_code = 74
+		} else if char == "K" {
+			char_code = 75
+		} else if char == "L" {
+			char_code = 76
+		} else if char == "M" {
+			char_code = 77
+		} else if char == "N" {
+			char_code = 78
+		} else if char == "O" {
+			char_code = 79
+		} else if char == "P" {
+			char_code = 80
+		} else if char == "Q" {
+			char_code = 81
+		} else if char == "R" {
+			char_code = 82
+		} else if char == "S" {
+			char_code = 83
+		} else if char == "T" {
+			char_code = 84
+		} else if char == "U" {
+			char_code = 85
+		} else if char == "V" {
+			char_code = 86
+		} else if char == "W" {
+			char_code = 87
+		} else if char == "X" {
+			char_code = 88
+		} else if char == "Y" {
+			char_code = 89
+		} else if char == "Z" {
+			char_code = 90
+		} else if char == "0" {
+			char_code = 48
+		} else if char == "1" {
+			char_code = 49
+		} else if char == "2" {
+			char_code = 50
+		} else if char == "3" {
+			char_code = 51
+		} else if char == "4" {
+			char_code = 52
+		} else if char == "5" {
+			char_code = 53
+		} else if char == "6" {
+			char_code = 54
+		} else if char == "7" {
+			char_code = 55
+		} else if char == "8" {
+			char_code = 56
+		} else if char == "9" {
+			char_code = 57
+		} else if char == " " {
+			char_code = 32
+		} else if char == "!" {
+			char_code = 33
+		} else if char == "\"" {
+			char_code = 34
+		} else if char == "#" {
+			char_code = 35
+		} else if char == "$" {
+			char_code = 36
+		} else if char == "%" {
+			char_code = 37
+		} else if char == "&" {
+			char_code = 38
+		} else if char == "'" {
+			char_code = 39
+		} else if char == "(" {
+			char_code = 40
+		} else if char == ")" {
+			char_code = 41
+		} else if char == "*" {
+			char_code = 42
+		} else if char == "+" {
+			char_code = 43
+		} else if char == "," {
+			char_code = 44
+		} else if char == "-" {
+			char_code = 45
+		} else if char == "." {
+			char_code = 46
+		} else if char == "/" {
+			char_code = 47
+		} else if char == ":" {
+			char_code = 58
+		} else if char == ";" {
+			char_code = 59
+		} else if char == "<" {
+			char_code = 60
+		} else if char == "=" {
+			char_code = 61
+		} else if char == ">" {
+			char_code = 62
+		} else if char == "?" {
+			char_code = 63
+		} else if char == "@" {
+			char_code = 64
+		} else if char == "[" {
+			char_code = 91
+		} else if char == "\\" {
+			char_code = 92
+		} else if char == "]" {
+			char_code = 93
+		} else if char == "^" {
+			char_code = 94
+		} else if char == "_" {
+			char_code = 95
+		} else if char == "`" {
+			char_code = 96
+		} else if char == "{" {
+			char_code = 123
+		} else if char == "|" {
+			char_code = 124
+		} else if char == "}" {
+			char_code = 125
+		} else if char == "~" {
+			char_code = 126
+		} else if char == "\n" {
+			char_code = 10
+		} else if char == "\r" {
+			char_code = 13
+		} else if char == "\t" {
+			char_code = 9
+		} else {
+			# Default for unknown characters
+			char_code = 0
+		}
+
+		append(bytes, char_code)
+	}
+	return bytes
+}
