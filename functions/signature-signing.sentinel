@@ -70,6 +70,9 @@ rotr = func(value, amount) {
 
 # Helper function to convert string to byte array
 string_to_bytes = func(input) {
+	if types.type_of(input) != "string" {
+		return []
+	}
 	bytes = []
 	for range(length(input)) as i {
 		# Get character code using string indexing
@@ -816,6 +819,86 @@ hmac_sha256_proper = func(key, data) {
 		} else {
 			outer_string += " " # Use space for non-printable chars
 		}
+	}
+
+	return sha256(outer_string)
+}
+
+##
+
+# HMAC-SHA256 implementation
+hmac_sha256 = func(key, message) {
+	# Convert inputs to bytes if they are strings
+	key_bytes = []
+	if types.type_of(key) == "string" {
+		key_bytes = string_to_bytes(key)
+	} else {
+		key_bytes = key
+	}
+
+	msg_bytes = []
+	if types.type_of(message) == "string" {
+		msg_bytes = string_to_bytes(message)
+	} else {
+		msg_bytes = message
+	}
+
+	# If key is longer than 64 bytes, hash it
+	if length(key_bytes) > 64 {
+		# SHA256 expects a string, so convert bytes to string first
+		key_string = ""
+		for key_bytes as byte {
+			key_string += string([byte])
+		}
+		key_hash = sha256(key_string)
+		key_bytes = hex_to_bytes(key_hash)
+	}
+
+	# If key is shorter than 64 bytes, pad it with zeros
+	if length(key_bytes) < 64 {
+		padding_needed = 64 - length(key_bytes)
+		for range(padding_needed) as i {
+			key_bytes = key_bytes + [0x00]
+		}
+	}
+
+	# Create inner and outer padded keys
+	ipad = []
+	opad = []
+	for range(64) as i {
+		append(ipad, int_xor(key_bytes[i], 0x36))
+		append(opad, int_xor(key_bytes[i], 0x5C))
+	}
+
+	# Create inner hash: SHA256(ipad || message)
+	inner_input = []
+	for ipad as byte {
+		append(inner_input, byte)
+	}
+	for msg_bytes as byte {
+		append(inner_input, byte)
+	}
+	# Convert bytes to string for SHA256 function
+	inner_string = ""
+	for inner_input as byte {
+		inner_string += string([byte])
+	}
+	inner_hash = sha256(inner_string)
+
+	# Create outer hash: SHA256(opad || inner_hash)
+	outer_input = []
+	for opad as byte {
+		append(outer_input, byte)
+	}
+	# Convert hex string inner_hash to bytes
+	inner_hash_bytes = hex_to_bytes(inner_hash)
+	for inner_hash_bytes as byte {
+		append(outer_input, byte)
+	}
+	# Convert bytes to string for SHA256 function
+	outer_string = ""
+	for outer_input as byte {
+		outer_string += string([byte])
 	}
 
 	return sha256(outer_string)
