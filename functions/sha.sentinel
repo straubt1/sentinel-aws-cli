@@ -93,7 +93,7 @@ sha256_h0 = [
 
 # Convert a string to an array of bytes
 string_to_bytes = func(s) {
-  print("Converting string to bytes:", s)
+  # print("Converting string to bytes:", s)
 	bytes = []
 	for range(length(s)) as i {
 		char_code = 0
@@ -382,7 +382,7 @@ hex_to_bytes = func(hex_string) {
 # SHA-256 implementation
 sha256 = func(input) {
 	# Convert string to bytes
-  print("Calling string_to_bytes (sha256):", input)
+  # print("Calling string_to_bytes (sha256):", input)
 	message_bytes = string_to_bytes(input)
 
 	# Pre-processing: adding padding bits
@@ -509,7 +509,7 @@ hmac_sha256 = func(key, message) {
 	if strings.has_prefix(key, "key:") {
 		# Remove "key:" prefix and convert to bytes
 		key_string = key[4:length(key)]
-		print("Calling string_to_bytes (hmac_sha256):", key_string)
+		# print("Calling string_to_bytes (hmac_sha256):", key_string)
 		key_bytes = string_to_bytes(key_string)
 	} else if strings.has_prefix(key, "hexkey:") {
 		# Remove "hexkey:" prefix and convert hex to bytes
@@ -566,7 +566,7 @@ hmac_sha256 = func(key, message) {
 	}
   # print("inner_data inner_string:", inner_string)  
 
-	print("Calling sha256 (hmac_sha256-2):", inner_string)
+	# print("Calling sha256 (hmac_sha256-2):", inner_string)
 	inner_hash = sha256(inner_string)
 	inner_hash_bytes = hex_to_bytes(inner_hash)
 
@@ -580,7 +580,7 @@ hmac_sha256 = func(key, message) {
 	}
 
 
-  print("Calling sha256 (hmac_sha256-3):", outer_string)
+  # print("Calling sha256 (hmac_sha256-3):", outer_string)
 	return sha256(outer_string)
 }
 
