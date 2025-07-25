@@ -1,0 +1,72 @@
+import "helper"
+
+# Test cases array for easy modification
+test_cases = [
+	{
+		"input":       [5, 3],
+		"expected":    6,
+		"description": "Basic XOR operation",
+	},
+	{
+		"input":       [0, 0],
+		"expected":    0,
+		"description": "XOR with both zeros",
+	},
+	{
+		"input":       [0, 15],
+		"expected":    15,
+		"description": "XOR with zero (identity)",
+	},
+	{
+		"input":       [7, 7],
+		"expected":    0,
+		"description": "XOR with same number",
+	},
+	{
+		"input":       [255, 0],
+		"expected":    255,
+		"description": "XOR with zero (larger number)",
+	},
+	{
+		"input":       [10, 7],
+		"expected":    13,
+		"description": "XOR with different bits",
+	},
+	{
+		"input":       [1, 1],
+		"expected":    0,
+		"description": "XOR with same single bit",
+	},
+	{
+		"input":       [8, 4],
+		"expected":    12,
+		"description": "XOR with powers of 2",
+	},
+]
+
+# Execute all test cases
+test_results = []
+for test_cases as c {
+	result = helper.int_xor(c.input[0], c.input[1])
+	passed = result == c.expected
+	test_results = test_results + [{
+		"description": c.description,
+		"input":       c.input,
+		"expected":    c.expected,
+		"actual":      result,
+		"passed":      passed,
+	}]
+	print("Test:", c.description)
+	print("Input:", c.input)
+	print("Expected:", c.expected)
+	print("Actual:", result)
+	print("Passed:", passed)
+	print("---")
+}
+
+# Main rule - all tests must pass
+main = rule {
+	all test_results as test {
+		test.passed
+	}
+}
