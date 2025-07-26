@@ -1,0 +1,220 @@
+import "aws-api-functions" as aws
+
+xml_response = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + "\n" +
+	"<DescribeImagesResponse xmlns=\"http://ec2.amazonaws.com/doc/2016-11-15/\">" +
+	"\n" +
+	"  <requestId>f29caa41-5788-4bbd-a6d2-43da7c7e6348</requestId>" +
+	"\n" +
+	"  <imagesSet>" +
+	"\n" +
+	"    <item>" +
+	"\n" +
+	"      <imageId>ami-0040e243c5f8879c3</imageId>" +
+	"\n" +
+	"      <imageLocation>600254362349/aws-core-ubuntu-2204_aws_ubuntu-2204_071442</imageLocation>" +
+	"\n" +
+	"      <imageState>available</imageState>" +
+	"\n" +
+	"      <imageOwnerId>600254362349</imageOwnerId>" +
+	"\n" +
+	"      <creationDate>2024-08-06T19:16:52.000Z</creationDate>" +
+	"\n" +
+	"      <isPublic>false</isPublic>" +
+	"\n" +
+	"      <architecture>x86_64</architecture>" +
+	"\n" +
+	"      <imageType>machine</imageType>" +
+	"\n" +
+	"      <sriovNetSupport>simple</sriovNetSupport>" +
+	"\n" +
+	"      <name>aws-core-ubuntu-2204_aws_ubuntu-2204_071442</name>" +
+	"\n" +
+	"      <rootDeviceType>ebs</rootDeviceType>" +
+	"\n" +
+	"      <rootDeviceName>/dev/sda1</rootDeviceName>" +
+	"\n" +
+	"      <blockDeviceMapping>" +
+	"\n" +
+	"        <item>" +
+	"\n" +
+	"          <deviceName>/dev/sda1</deviceName>" +
+	"\n" +
+	"          <ebs>" +
+	"\n" +
+	"            <snapshotId>snap-037676023c98613a5</snapshotId>" +
+	"\n" +
+	"            <volumeSize>8</volumeSize>" +
+	"\n" +
+	"            <deleteOnTermination>true</deleteOnTermination>" +
+	"\n" +
+	"            <volumeType>gp2</volumeType>" +
+	"\n" +
+	"            <encrypted>false</encrypted>" +
+	"\n" +
+	"          </ebs>" +
+	"\n" +
+	"        </item>" +
+	"\n" +
+	"        <item>" +
+	"\n" +
+	"          <deviceName>/dev/sdb</deviceName>" +
+	"\n" +
+	"          <virtualName>ephemeral0</virtualName>" +
+	"\n" +
+	"        </item>" +
+	"\n" +
+	"        <item>" +
+	"\n" +
+	"          <deviceName>/dev/sdc</deviceName>" +
+	"\n" +
+	"          <virtualName>ephemeral1</virtualName>" +
+	"\n" +
+	"        </item>" +
+	"\n" +
+	"      </blockDeviceMapping>" +
+	"\n" +
+	"      <virtualizationType>hvm</virtualizationType>" +
+	"\n" +
+	"      <tagSet>" +
+	"\n" +
+	"        <item>" +
+	"\n" +
+	"          <key>built-by</key>" +
+	"\n" +
+	"          <value>packer</value>" +
+	"\n" +
+	"        </item>" +
+	"\n" +
+	"        <item>" +
+	"\n" +
+	"          <key>build-date</key>" +
+	"\n" +
+	"          <value>071442</value>" +
+	"\n" +
+	"        </item>" +
+	"\n" +
+	"        <item>" +
+	"\n" +
+	"          <key>os</key>" +
+	"\n" +
+	"          <value>ubuntu</value>" +
+	"\n" +
+	"        </item>" +
+	"\n" +
+	"        <item>" +
+	"\n" +
+	"          <key>os-version</key>" +
+	"\n" +
+	"          <value>2204</value>" +
+	"\n" +
+	"        </item>" +
+	"\n" +
+	"        <item>" +
+	"\n" +
+	"          <key>owner</key>" +
+	"\n" +
+	"          <value>aws-team</value>" +
+	"\n" +
+	"        </item>" +
+	"\n" +
+	"      </tagSet>" +
+	"\n" +
+	"      <hypervisor>xen</hypervisor>" +
+	"\n" +
+	"      <enaSupport>true</enaSupport>" +
+	"\n" +
+	"      <platformDetails>Linux/UNIX</platformDetails>" +
+	"\n" +
+	"      <usageOperation>RunInstances</usageOperation>" +
+	"\n" +
+	"      <bootMode>uefi-preferred</bootMode>" +
+	"\n" +
+	"      <imdsSupport>v2.0</imdsSupport>" +
+	"\n" +
+	"      <sourceInstanceId>i-0d7eafd17baffd783</sourceInstanceId>" +
+	"\n" +
+	"      <deregistrationProtection>disabled</deregistrationProtection>" +
+	"\n" +
+	"      <freeTierEligible>true</freeTierEligible>" +
+	"\n" +
+	"      <sourceImageId>ami-03e31863b8e1f70a5</sourceImageId>" +
+	"\n" +
+	"      <sourceImageRegion>us-east-1</sourceImageRegion>" +
+	"\n" +
+	"    </item>" +
+	"\n" +
+	"  </imagesSet>" +
+	"\n" +
+	"</DescribeImagesResponse>" +
+	"\n"
+
+# Test cases array for easy modification
+test_cases = [
+	{
+		"input":       [xml_response, "name"],
+		"expected":    "aws-core-ubuntu-2204_aws_ubuntu-2204_071442",
+		"description": "XML parse for 'name' key",
+	},
+	{
+		"input":       [xml_response, "imageId"],
+		"expected":    "ami-0040e243c5f8879c3",
+		"description": "XML parse for 'imageId' key",
+	},
+	{
+		"input":       [xml_response, "imageState"],
+		"expected":    "available",
+		"description": "XML parse for 'imageState' key",
+	},
+	{
+		"input":       [xml_response, "architecture"],
+		"expected":    "x86_64",
+		"description": "XML parse for 'architecture' key",
+	},
+	{
+		"input":       [xml_response, "virtualizationType"],
+		"expected":    "hvm",
+		"description": "XML parse for 'virtualizationType' key",
+	},
+	{
+		"input":       [xml_response, "hypervisor"],
+		"expected":    "xen",
+		"description": "XML parse for 'hypervisor' key",
+	},
+	{
+		"input":       [xml_response, "isPublic"],
+		"expected":    "false",
+		"description": "XML parse for 'isPublic' key",
+	},
+	{
+		"input":       [xml_response, "nonexistent"],
+		"expected":    "",
+		"description": "XML parse for nonexistent key should return empty string",
+	},
+]
+
+# Execute all test cases
+test_results = []
+for test_cases as c {
+	result = aws.parseXmlForKey(c.input[0], c.input[1])
+	passed = result == c.expected
+	test_results = test_results + [{
+		"description": c.description,
+		"input":       c.input,
+		"expected":    c.expected,
+		"actual":      result,
+		"passed":      passed,
+	}]
+	print("Test:", c.description)
+	print("Input:", c.input[0], "Key:", c.input[1])
+	print("Expected:", c.expected)
+	print("Actual:", result)
+	print("Passed:", passed)
+	print("---")
+}
+
+# Main rule - all tests must pass
+main = rule {
+	all test_results as test {
+		test.passed
+	}
+}
