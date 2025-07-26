@@ -6,4 +6,4 @@ tasks:
   format:
     desc: Format all files in the repository, ignoring any potential hidden folder ".sentinel/"
     cmds:
-      - find . -name "*.sentinel" ! -path "./.sentinel" -exec sentinel fmt {} \;
+      - find . -name "*.sentinel" ! -path "*/.sentinel" -exec sentinel fmt {} \;

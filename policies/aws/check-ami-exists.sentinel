@@ -1,0 +1,64 @@
+import "http"
+import "strings"
+import "json"
+import "time"
+
+import "tfplan/v2" as tfplan
+import "aws-api-functions" as aws
+import "aws-test-credentials" as aws_test_credentials
+
+# Parameters for AWS credentials
+param aws_access_key_id default ""
+param aws_secret_access_key default ""
+
+# Filter plan to find resources of a specific type
+# Typically this would be in a tfplan functions file, 
+# but for this simple example it is included here to simplify the code.
+func find_resources(type) {
+	resources = filter tfplan.resource_changes as address, rc {
+		rc.type is type and
+			rc.mode is "managed" and
+			(rc.change.actions contains "create" or rc.change.actions contains "update" or
+				rc.change.actions contains "read" or
+				(rc.change.actions contains "no-op" and
+					rc.change.after is not null))
+	}
+
+	return resources
+}
+
+# This is only needed for testing purposes
+if aws_access_key_id is "" or aws_secret_access_key is "" {
+	print("AWS credentials are not set. Using the static import for testing purposes.")
+	aws_access_key_id = aws_test_credentials.aws_access_key_id
+	aws_secret_access_key = aws_test_credentials.aws_secret_access_key
+}
+# Configure AWS credentials
+aws.setCredentials(aws_access_key_id, aws_secret_access_key)
+
+# Get all resources of type aws_instance from the terraform plan
+allEC2Instances = find_resources("aws_instance")
+instance_violations = {}
+for allEC2Instances as address, instance {
+		ami_id = instance.change.after.ami
+    region = tfplan.variables.region.value # Is this really the only way to get the region?
+    query = "Action=DescribeImages&ImageId.1=" + ami_id + "&Version=2016-11-15"
+
+    result = aws.get(region, "ec2", query)
+		if result is null {
+			print("[ERROR] AMI ID not found in AWS:", ami_id)
+			instance_violations[address] = instance
+		} else {
+      # Here we are simply printing the result, but here is where you could pass/fail based on the result
+      print("[INFO] AMI ID found in AWS:", ami_id)
+      print("Name:", aws.parseXmlForKey(result.body, "name"))
+      print("Owner Id:", aws.parseXmlForKey(result.body, "imageOwnerId"))
+      print("Creation Date:", aws.parseXmlForKey(result.body, "creationDate"))
+      print("Source Image Id:", aws.parseXmlForKey(result.body, "sourceImageId"))
+      print("Source Image Region:", aws.parseXmlForKey(result.body, "sourceImageRegion"))
+    }
+}
+
+main = rule {
+  length(instance_violations) is 0
+}
