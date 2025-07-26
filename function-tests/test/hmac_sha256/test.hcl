@@ -5,8 +5,8 @@ test {
   }
 }
 
-mock "helper" {
+mock "aws-api-functions" {
   module {
-    source = "../../../../functions/helper.sentinel"
+    source = "../../../functions/aws-api-functions.sentinel"
   }
 }

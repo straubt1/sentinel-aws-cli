@@ -1,4 +1,4 @@
-import "helper"
+import "aws-api-functions" as aws
 
 # Test cases array for easy modification
 test_cases = [
@@ -12,7 +12,7 @@ test_cases = [
 # Execute all test cases
 test_results = []
 for test_cases as c {
-	result = helper.sha256_bytes(c.input)
+	result = aws.sha256_bytes(c.input)
 	passed = result == c.expected
 	test_results = test_results + [{
 		"description": c.description,
