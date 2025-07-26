@@ -40,6 +40,7 @@ aws.setCredentials(aws_access_key_id, aws_secret_access_key)
 allEC2Instances = find_resources("aws_instance")
 instance_violations = {}
 for allEC2Instances as address, instance {
+		# get the AMI ID and region from the mock or you can hard code for testing
 		ami_id = instance.change.after.ami
     region = tfplan.variables.region.value # Is this really the only way to get the region?
     query = "Action=DescribeImages&ImageId.1=" + ami_id + "&Version=2016-11-15"
