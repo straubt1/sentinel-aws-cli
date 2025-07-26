@@ -81,8 +81,6 @@ func get(region, service, query) {
 		", Signature=" +
 		SIGNATURE
 
-	# ep = ENDPOINT + "?" + QUERY_STRING
-
 	req = http.request(ENDPOINT).with_header("Content-Type", "application/x-www-form-urlencoded; charset=utf-8").with_header("X-Amz-Date", TIME).with_header("Authorization", AUTHORIZATION)
 	response = http.accept_status_codes([200, 401, 403, 404, 500]).get(req)
 	return response

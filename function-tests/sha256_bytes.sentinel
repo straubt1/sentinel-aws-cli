@@ -1,0 +1,37 @@
+import "helper"
+
+# Test cases array for easy modification
+test_cases = [
+	{
+		"input":       [4, 3, 5],
+		"expected":    "40d8597ea9a489ae7d1e43e93de718c7c5ccdf3299fd58493b2f6f777d51550d",
+		"description": "Basic HMAC-SHA256 hash",
+	},
+]
+
+# Execute all test cases
+test_results = []
+for test_cases as c {
+	result = helper.sha256_bytes(c.input)
+	passed = result == c.expected
+	test_results = test_results + [{
+		"description": c.description,
+		"input":       c.input,
+		"expected":    c.expected,
+		"actual":      result,
+		"passed":      passed,
+	}]
+	print("Test:", c.description)
+	print("Input:", c.input)
+	print("Expected:", c.expected)
+	print("Actual:", result)
+	print("Passed:", passed)
+	print("---")
+}
+
+# Main rule - all tests must pass
+main = rule {
+	all test_results as test {
+		test.passed
+	}
+}

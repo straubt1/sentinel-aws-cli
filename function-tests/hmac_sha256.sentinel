@@ -1,0 +1,47 @@
+import "helper"
+
+# Test cases array for easy modification
+test_cases = [
+	{
+		"input":       ["key:mysecretkey", "my message"],
+		"expected":    "7a94040c3ca2b9e19129444dbacd5328d03e052697b12cbf49984cbed86f05bd",
+		"description": "Basic HMAC-SHA256 hash",
+	},
+	{
+		"input":       ["key:AWS4455GbWLSrZ7glFhvtYnnKp8nt5ohXiaUDDjIwjfhj", "20250724"],
+		"expected":    "e51ed389a0df1fbb2c20095a0d29309723278d92c052295fe5df2bb5ec762516",
+		"description": "Basic HMAC-SHA256 hash",
+	},
+	{
+		"input":       ["hexkey:0f341f1c1f9035cf3509cd7c325a1f192795411d82d94b28fb9de293e71595d3", "us-east-1"],
+		"expected":    "b1758a821bbcf0a9715df32efc170f4c6ec163c58620e4d4ad295be6b5d97bac",
+		"description": "Basic HMAC-SHA256 hash",
+	},
+]
+
+# Execute all test cases
+test_results = []
+for test_cases as c {
+	result = helper.hmac_sha256(c.input[0], c.input[1])
+	passed = result == c.expected
+	test_results = test_results + [{
+		"description": c.description,
+		"input":       c.input,
+		"expected":    c.expected,
+		"actual":      result,
+		"passed":      passed,
+	}]
+	print("Test:", c.description)
+	print("Input:", c.input)
+	print("Expected:", c.expected)
+	print("Actual:", result)
+	print("Passed:", passed)
+	print("---")
+}
+
+# Main rule - all tests must pass
+main = rule {
+	all test_results as test {
+		test.passed
+	}
+}

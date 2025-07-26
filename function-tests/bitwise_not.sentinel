@@ -1,0 +1,72 @@
+import "helper"
+
+# Test cases array for easy modification
+test_cases = [
+	{
+		"input":       [5],
+		"expected":    4294967290,
+		"description": "Basic bitwise NOT operation with 5",
+	},
+	{
+		"input":       [0],
+		"expected":    4294967295,
+		"description": "Bitwise NOT of 0 (all bits flipped)",
+	},
+	{
+		"input":       [1],
+		"expected":    4294967294,
+		"description": "Bitwise NOT of 1",
+	},
+	{
+		"input":       [255],
+		"expected":    4294967040,
+		"description": "Bitwise NOT of 255 (byte boundary)",
+	},
+	{
+		"input":       [65535],
+		"expected":    4294901760,
+		"description": "Bitwise NOT of 65535 (16-bit boundary)",
+	},
+	{
+		"input":       [4294967295],
+		"expected":    0,
+		"description": "Bitwise NOT of max 32-bit value",
+	},
+	{
+		"input":       [42],
+		"expected":    4294967253,
+		"description": "Bitwise NOT of arbitrary number 42",
+	},
+	{
+		"input":       [128],
+		"expected":    4294967167,
+		"description": "Bitwise NOT of power of 2 (128)",
+	},
+]
+
+# Execute all test cases
+test_results = []
+for test_cases as c {
+	result = helper.bitwise_not(c.input[0])
+	passed = result == c.expected
+	test_results = test_results + [{
+		"description": c.description,
+		"input":       c.input,
+		"expected":    c.expected,
+		"actual":      result,
+		"passed":      passed,
+	}]
+	print("Test:", c.description)
+	print("Input:", c.input)
+	print("Expected:", c.expected)
+	print("Actual:", result)
+	print("Passed:", passed)
+	print("---")
+}
+
+# Main rule - all tests must pass
+main = rule {
+	all test_results as test {
+		test.passed
+	}
+}
