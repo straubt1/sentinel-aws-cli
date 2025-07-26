@@ -1,0 +1,72 @@
+import "aws-api-functions" as aws
+
+# Test cases array for easy modification
+test_cases = [
+	{
+		"input":       ["1234"],
+		"expected":    [0x12, 0x34],
+		"description": "Basic hex string conversion",
+	},
+	{
+		"input":       ["abcd"],
+		"expected":    [0xab, 0xcd],
+		"description": "Hex string with lowercase letters",
+	},
+	{
+		"input":       ["00"],
+		"expected":    [0x00],
+		"description": "Single zero byte",
+	},
+	{
+		"input":       ["ff"],
+		"expected":    [0xff],
+		"description": "Maximum single byte value",
+	},
+	{
+		"input":       ["0123456789abcdef"],
+		"expected":    [0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef],
+		"description": "Long hex string with all hex digits",
+	},
+	{
+		"input":       [""],
+		"expected":    [],
+		"description": "Empty hex string",
+	},
+	# {
+	#  "input":       ["ABCD"],
+	#  "expected":    [0xAB, 0xCD],
+	#  "description": "Hex string with uppercase letters",
+	# },
+	# {
+	#  "input":       ["a"],
+	#  "expected":    [0x0a],
+	#  "description": "Odd length hex string (single character)",
+	# },
+]
+
+# Execute all test cases
+test_results = []
+for test_cases as c {
+	result = aws.hex_to_bytes(c.input[0])
+	passed = result == c.expected
+	test_results = test_results + [{
+		"description": c.description,
+		"input":       c.input,
+		"expected":    c.expected,
+		"actual":      result,
+		"passed":      passed,
+	}]
+	print("Test:", c.description)
+	print("Input:", c.input)
+	print("Expected:", c.expected)
+	print("Actual:", result)
+	print("Passed:", passed)
+	print("---")
+}
+
+# Main rule - all tests must pass
+main = rule {
+	all test_results as test {
+		test.passed
+	}
+}

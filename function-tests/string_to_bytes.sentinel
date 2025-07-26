@@ -1,0 +1,57 @@
+import "aws-api-functions" as aws
+
+# Test cases array for easy modification
+test_cases = [
+	{
+		"input":       ["abc"],
+		"expected":    [97, 98, 99],
+		"description": "Basic ASCII string conversion",
+	},
+	{
+		"input":       [""],
+		"expected":    [],
+		"description": "Empty string should return empty array",
+	},
+	{
+		"input":       ["A"],
+		"expected":    [65],
+		"description": "Single uppercase character",
+	},
+	{
+		"input":       ["123"],
+		"expected":    [49, 50, 51],
+		"description": "Numeric string conversion",
+	},
+	{
+		"input":       ["!@#"],
+		"expected":    [33, 64, 35],
+		"description": "Special characters conversion",
+	},
+]
+
+# Execute all test cases
+test_results = []
+for test_cases as c {
+	result = aws.string_to_bytes(c.input[0])
+	passed = result == c.expected
+	test_results = test_results + [{
+		"description": c.description,
+		"input":       c.input,
+		"expected":    c.expected,
+		"actual":      result,
+		"passed":      passed,
+	}]
+	print("Test:", c.description)
+	print("Input:", c.input)
+	print("Expected:", c.expected)
+	print("Actual:", result)
+	print("Passed:", passed)
+	print("---")
+}
+
+# Main rule - all tests must pass
+main = rule {
+	all test_results as test {
+		test.passed
+	}
+}

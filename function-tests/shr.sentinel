@@ -1,0 +1,72 @@
+import "aws-api-functions" as aws
+
+# Test cases array for easy modification
+test_cases = [
+	{
+		"input":       [0x12345678, 4],
+		"expected":    0x01234567,
+		"description": "Basic right shift operation",
+	},
+	{
+		"input":       [0xFF000000, 8],
+		"expected":    0x00FF0000,
+		"description": "Shift with high bits set",
+	},
+	{
+		"input":       [0x80000000, 1],
+		"expected":    0x40000000,
+		"description": "Shift sign bit",
+	},
+	{
+		"input":       [0xFFFFFFFF, 16],
+		"expected":    0x0000FFFF,
+		"description": "Shift all bits set",
+	},
+	{
+		"input":       [0x00000001, 0],
+		"expected":    0x00000001,
+		"description": "No shift (shift by 0)",
+	},
+	{
+		"input":       [0x00000000, 8],
+		"expected":    0x00000000,
+		"description": "Shift zero value",
+	},
+	{
+		"input":       [0xAAAAAAAA, 4],
+		"expected":    0x0AAAAAAA,
+		"description": "Shift alternating bit pattern",
+	},
+	{
+		"input":       [0x12345678, 31],
+		"expected":    0x00000000,
+		"description": "Large shift that clears most bits",
+	},
+]
+
+# Execute all test cases
+test_results = []
+for test_cases as c {
+	result = aws.shr(c.input[0], c.input[1])
+	passed = result == c.expected
+	test_results = test_results + [{
+		"description": c.description,
+		"input":       c.input,
+		"expected":    c.expected,
+		"actual":      result,
+		"passed":      passed,
+	}]
+	print("Test:", c.description)
+	print("Input:", c.input)
+	print("Expected:", c.expected)
+	print("Actual:", result)
+	print("Passed:", passed)
+	print("---")
+}
+
+# Main rule - all tests must pass
+main = rule {
+	all test_results as test {
+		test.passed
+	}
+}
