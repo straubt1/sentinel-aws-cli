@@ -1,4 +1,4 @@
-import "static" "hcp-test-config" {
+import "static" "aws-test-credentials" {
   source = "./source/aws.json" # This file does not have values set, but is required for Sentinel to run
   format = "json"
 }
