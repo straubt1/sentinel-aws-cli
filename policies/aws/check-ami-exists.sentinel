@@ -27,6 +27,8 @@ func find_resources(type) {
 	return resources
 }
 
+start = time.now
+
 # This is only needed for testing purposes
 if aws_access_key_id is "" or aws_secret_access_key is "" {
 	print("AWS credentials are not set. Using the static import for testing purposes.")
@@ -59,6 +61,10 @@ for allEC2Instances as address, instance {
       print("Source Image Region:", aws.parseXmlForKey(result.body, "sourceImageRegion"))
     }
 }
+
+stop = time.now
+duration = time.load(stop).sub(start)
+print("Policy execution time:", duration / 1000000, "ms")
 
 main = rule {
   length(instance_violations) is 0
