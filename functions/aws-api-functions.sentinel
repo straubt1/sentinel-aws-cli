@@ -86,27 +86,26 @@ func get(region, service, query) {
 	return response
 }
 
-
 # Parse (light) an XML response to find a specific key
 # Crude implementation that assumes the XML is well-formed
 func parseXmlForKey(xml, key) {
-  # Parse the XML response to find the value for the specified key
-  ss = strings.split(xml, "\n")
-  xml_key_start = "<" + key + ">"
-  xml_key_end = "</" + key + ">"
-  for ss as line {
-    # remove leading and trailing whitespace
-    trimmed_line = strings.trim_space(line)
-    # check if the line starts with the XML key, if so, extract the value
-    if strings.has_prefix(trimmed_line, xml_key_start) {
-      clean = strings.trim_prefix(trimmed_line, xml_key_start)
-      clean = strings.trim_suffix(clean, xml_key_end)
-      return clean
-    }
-  }
-  print("[WARNING] Key not found in XML:", key)
-  return ""
-} 
+	# Parse the XML response to find the value for the specified key
+	ss = strings.split(xml, "\n")
+	xml_key_start = "<" + key + ">"
+	xml_key_end = "</" + key + ">"
+	for ss as line {
+		# remove leading and trailing whitespace
+		trimmed_line = strings.trim_space(line)
+		# check if the line starts with the XML key, if so, extract the value
+		if strings.has_prefix(trimmed_line, xml_key_start) {
+			clean = strings.trim_prefix(trimmed_line, xml_key_start)
+			clean = strings.trim_suffix(clean, xml_key_end)
+			return clean
+		}
+	}
+	print("[WARNING] Key not found in XML:", key)
+	return ""
+}
 
 # ----------------
 # Private Functions - These are only used internally in this function file

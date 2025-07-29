@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# `ec2_describe_image.sh`
+
+# This is a helpful script to call AWS APIs from bash.
+# This was used as a reference for how to call the AWS API.
+
 # Check if required environment variables are set
 if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
     echo "Error: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables must be set"
@@ -7,7 +12,7 @@ if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
 fi
 
 # Configuration
-AMI_ID="ami-0040e243c5f8879c3"
+AMI_ID="ami-12345678"  # Replace with your AMI ID
 REGION="us-east-1"
 SERVICE="ec2"
 HOST="ec2.${REGION}.amazonaws.com"
